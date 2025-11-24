@@ -1,0 +1,68 @@
+Best LSTM trainings:
+---------------------------------------
+20230920_jó:
+array([[13077,  1170],									TP	FP
+       [ 2754, 12069]], dtype=int64)					FN	TN
+Training Precision:  0.91162474507138 
+Training Recall:  0.8142076502732241 
+Training F1 Score: 0.860166773572803
+
+20240130_1_jó:
+array([[13043,  1189],
+       [ 2640, 12198]], dtype=int64)
+Training Precision:  0.9111824904758348 
+Training Recall:  0.8220784472300849 
+Training F1 Score: 0.864340124003543
+
+20240130_2_jó:
+array([[12467,  1713],
+       [ 2481, 12409]], dtype=int64)
+Training Precision:  0.8786999008639003 
+Training Recall:  0.8333781061114842 
+Training F1 Score: 0.8554391286364263
+
+20240202_jó:
+array([[13448,   788],
+       [ 2511, 12323]], dtype=int64)
+Training Precision:  0.9398977957440318 
+Training Recall:  0.830726708911959 
+Training F1 Score: 0.8819466809804973
+
+20240203_jó:
+array([[13644,   584],
+       [ 1572, 13270]], dtype=int64)
+Training Precision:  0.9578461094268803 
+Training Recall:  0.894084355208193 
+Training F1 Score: 0.9248675773626985
+
+20240204:
+array([[11357,  2869],
+       [ 2241, 12603]], dtype=int64)
+Training Precision:  0.8145682523267839 
+Training Recall:  0.8490299110751819 
+Training F1 Score: 0.8314421427628975
+
+******************************************************************
+
+Best Transformer trainings:
+---------------------------------------
+20240129_2:
+array([[12379,  1849],
+       [ 8724,  6118]], dtype=int64)
+Training Precision:  0.7679176603489394 
+Training Recall:  0.4122085972240938 
+Training F1 Score: 0.5364549081502916
+
+20240202:
+array([[11054,  3129],
+       [ 2880, 12007]], dtype=int64)
+Training Precision:  0.7932743128964059 
+Training Recall:  0.8065426210787936 
+Training F1 Score: 0.7998534456916364
+
+20240204:
+array([[    0, 14271],
+       [    0, 14799]], dtype=int64)
+Training Precision:  0.5090815273477812 
+Training Recall:  1.0 
+Training F1 Score: 0.6746905559734665
