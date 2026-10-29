@@ -1,7 +1,10 @@
 .predmaint/
+.uv-cache/
 install/
 __pycache__/
 *.py[cod]
+*.egg-info/
+.pytest_cache/
 .ipynb_checkpoints/
 
 data/raw/

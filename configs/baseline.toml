@@ -1,0 +1,19 @@
+[data]
+raw_dir = "data/raw/azure_pdm"
+processed_path = "data/processed/azure_pdm_features.parquet"
+
+[features]
+horizon_hours = 24
+rolling_windows_hours = [3, 24]
+
+[split]
+train_fraction = 0.70
+validation_fraction = 0.15
+random_seed = 42
+
+[model]
+max_iterations = 1000
+
+[output]
+artifact_dir = "artifacts/baseline"
+report_dir = "reports/baseline"

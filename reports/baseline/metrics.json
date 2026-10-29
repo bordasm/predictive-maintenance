@@ -1,0 +1,108 @@
+{
+  "objective": "any component failure within 24 hours",
+  "split_strategy": "machine-disjoint random split",
+  "random_seed": 42,
+  "runtime": {
+    "python": "3.14.10",
+    "scikit_learn": "1.9.1"
+  },
+  "raw_data": {
+    "PdM_errors.csv": {
+      "bytes": 129077,
+      "sha256": "9c2a2a010ad77227e2bb0c94e7971bca78810790ddd1f28a8bee4f12c2f62370"
+    },
+    "PdM_failures.csv": {
+      "bytes": 24336,
+      "sha256": "0c6c31a4fd52ef2df95ad7c44e8b0c8c32917bcef29ba5a1ba3ba45531ded3b7"
+    },
+    "PdM_machines.csv": {
+      "bytes": 1582,
+      "sha256": "5e8e1571c4999bf88abb7cae3925964c218d946fe851a9a100bb3d19330652bc"
+    },
+    "PdM_maint.csv": {
+      "bytes": 104903,
+      "sha256": "481ed4e155f609e6ca6130754d2c035453093902a507cce5b3f3e235995f1db6"
+    },
+    "PdM_telemetry.csv": {
+      "bytes": 80142329,
+      "sha256": "d957f3c45bb83416b716600da8cffd72f4b6961db89867d9696ad19f7cb1bd4e"
+    }
+  },
+  "features": [
+    "volt",
+    "rotate",
+    "pressure",
+    "vibration",
+    "volt_mean_3h",
+    "volt_std_3h",
+    "rotate_mean_3h",
+    "rotate_std_3h",
+    "pressure_mean_3h",
+    "pressure_std_3h",
+    "vibration_mean_3h",
+    "vibration_std_3h",
+    "volt_mean_24h",
+    "volt_std_24h",
+    "rotate_mean_24h",
+    "rotate_std_24h",
+    "pressure_mean_24h",
+    "pressure_std_24h",
+    "vibration_mean_24h",
+    "vibration_std_24h",
+    "error1_count_24h",
+    "error2_count_24h",
+    "error3_count_24h",
+    "error4_count_24h",
+    "error5_count_24h",
+    "days_since_comp1_maintenance",
+    "days_since_comp2_maintenance",
+    "days_since_comp3_maintenance",
+    "days_since_comp4_maintenance",
+    "age",
+    "model"
+  ],
+  "validation": {
+    "rows": 131415,
+    "positive_rows": 2814,
+    "positive_rate": 0.021413080698550392,
+    "threshold": 0.9497289031099062,
+    "average_precision": 0.8835376507037181,
+    "roc_auc": 0.9941588503743086,
+    "precision": 0.817411150961852,
+    "recall": 0.8909026297085999,
+    "f1": 0.8525760925012753,
+    "false_positive_rows_per_machine_day": 0.10200364298724955,
+    "false_positive_rows_per_machine_week": 0.7140255009107468,
+    "confusion_matrix": {
+      "tn": 128041,
+      "fp": 560,
+      "fn": 307,
+      "tp": 2507
+    }
+  },
+  "test": {
+    "rows": 131415,
+    "positive_rows": 2856,
+    "positive_rate": 0.021732678917931743,
+    "threshold": 0.9497289031099062,
+    "average_precision": 0.8583719954779361,
+    "roc_auc": 0.9970275803131559,
+    "precision": 0.7395058052991962,
+    "recall": 0.8697478991596639,
+    "f1": 0.7993563958165728,
+    "false_positive_rows_per_machine_day": 0.15938069216757741,
+    "false_positive_rows_per_machine_week": 1.115664845173042,
+    "confusion_matrix": {
+      "tn": 127684,
+      "fp": 875,
+      "fn": 372,
+      "tp": 2484
+    },
+    "failure_events": {
+      "eligible_failure_events": 126,
+      "detected_failure_events": 122,
+      "event_recall": 0.9682539682539683,
+      "median_lead_time_hours": 24.0
+    }
+  }
+}

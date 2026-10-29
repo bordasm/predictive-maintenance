@@ -1,0 +1,58 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from predictive_maintenance.data.load import RawTables
+from predictive_maintenance.data.schema import TABLE_SCHEMAS
+from predictive_maintenance.pipeline import run_pipeline
+
+
+def test_pipeline_runs_end_to_end_on_synthetic_data(
+    tmp_path: Path, raw_tables: RawTables
+) -> None:
+    raw_dir = tmp_path / "raw"
+    raw_dir.mkdir()
+    for name, frame in raw_tables.as_dict().items():
+        frame.to_csv(raw_dir / TABLE_SCHEMAS[name].filename, index=False)
+
+    processed_path = tmp_path / "processed" / "features.parquet"
+    artifact_dir = tmp_path / "artifacts"
+    report_dir = tmp_path / "reports"
+    config_path = tmp_path / "baseline.toml"
+    config_path.write_text(
+        f"""
+[data]
+raw_dir = "{raw_dir.as_posix()}"
+processed_path = "{processed_path.as_posix()}"
+
+[features]
+horizon_hours = 24
+rolling_windows_hours = [3, 24]
+
+[split]
+train_fraction = 0.70
+validation_fraction = 0.15
+random_seed = 42
+
+[model]
+max_iterations = 200
+
+[output]
+artifact_dir = "{artifact_dir.as_posix()}"
+report_dir = "{report_dir.as_posix()}"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    report = run_pipeline(config_path)
+    manifest = json.loads((artifact_dir / "split_manifest.json").read_text())
+
+    assert 0.0 <= report["test"]["average_precision"] <= 1.0
+    assert processed_path.exists()
+    assert (artifact_dir / "model.joblib").exists()
+    assert (report_dir / "metrics.json").exists()
+    assert (report_dir / "README.md").exists()
+    assert set(manifest["train"]).isdisjoint(manifest["validation"])
+    assert set(manifest["train"]).isdisjoint(manifest["test"])
+    assert set(manifest["validation"]).isdisjoint(manifest["test"])

@@ -5,8 +5,10 @@ description = "End-to-end predictive maintenance and MLOps portfolio project"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "joblib==1.6.0",
     "numpy==2.5.4",
     "pandas==3.1.0",
+    "pyarrow==26.0.0",
     "scikit-learn==1.9.1",
     "torch==2.14.1",
 ]
@@ -15,7 +17,18 @@ dependencies = [
 dev = [
     "ipykernel==7.4.0",
     "jupyterlab==4.6.4",
+    "pytest==9.2.0",
 ]
+
+[build-system]
+requires = ["setuptools>=78"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cu126" }
