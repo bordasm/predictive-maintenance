@@ -39,6 +39,24 @@ The experiment pipeline:
 
 The held-out test result is reported only after model selection.
 
+## Third milestone
+
+The online inference service:
+
+1. loads the champion manifest and model once during FastAPI lifespan startup;
+2. exposes readiness, model metadata, and versioned batch-prediction endpoints;
+3. validates all 31 model features with a strict Pydantic contract and rejects
+   unknown or invalid fields;
+4. returns the failure probability and a threshold-based 24-hour alert;
+5. identifies the served model with its MLflow run ID;
+6. includes an integration-tested sample request, smoke-test script, Dockerfile,
+   and Compose configuration.
+
+The API accepts model-ready features. Computing rolling features from streaming
+telemetry remains an upstream responsibility; this keeps online model serving
+separate from stateful feature computation. See the
+[serving verification report](reports/serving/README.md).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -93,6 +111,36 @@ uv run mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-
 ```
 
 Then open `http://127.0.0.1:5000`.
+
+Start the inference API locally:
+
+```powershell
+uv run uvicorn predictive_maintenance.serving.app:app --host 127.0.0.1 --port 8000
+```
+
+Interactive OpenAPI documentation is available at `http://127.0.0.1:8000/docs`.
+Run the checked-in request against all public endpoints:
+
+```powershell
+uv run python scripts/smoke_api.py
+```
+
+The versioned endpoints are:
+
+```text
+GET  /health
+GET  /v1/model-info
+POST /v1/predict
+```
+
+Build and run the container after Docker with the Compose plugin is available:
+
+```powershell
+docker compose up --build
+```
+
+Compose mounts `artifacts/experiments/` read-only at `/models`, so the trained
+model stays outside the image and can be replaced independently.
 
 Generated outputs:
 

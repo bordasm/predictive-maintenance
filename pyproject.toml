@@ -5,6 +5,7 @@ description = "End-to-end predictive maintenance and MLOps portfolio project"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [
+    "fastapi==0.162.0",
     "joblib==1.6.0",
     "mlflow==3.17.2",
     "numpy==2.5.4",
@@ -12,10 +13,12 @@ dependencies = [
     "pyarrow==25.0.0",
     "scikit-learn==1.9.1",
     "torch==2.14.1",
+    "uvicorn==0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx2==2.16.0",
     "ipykernel==7.4.0",
     "jupyterlab==4.6.4",
     "pytest==9.2.0",

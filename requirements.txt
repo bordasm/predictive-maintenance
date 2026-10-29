@@ -17,6 +17,7 @@ annotated-types==0.8.0
 anyio==4.15.1
     # via
     #   httpx
+    #   httpx2
     #   jupyter-server
     #   mlflow-skinny
     #   starlette
@@ -104,7 +105,9 @@ docker==7.2.0
 executing==2.3.0
     # via stack-data
 fastapi==0.162.0
-    # via mlflow-skinny
+    # via
+    #   mlflow-skinny
+    #   predictive-maintenance
 fastjsonschema==2.22.2
     # via nbformat
 filelock==4.2.4
@@ -144,17 +147,24 @@ gunicorn==26.2.0 ; sys_platform != 'win32'
 h11==0.16.0
     # via
     #   httpcore
+    #   httpcore2
     #   uvicorn
 httpcore==1.0.9
     # via httpx
+httpcore2==2.16.0 ; sys_platform != 'emscripten'
+    # via httpx2
 httpx==0.28.1
     # via jupyterlab
+httpx2==2.16.0
+httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
+    # via httpx2
 huey==3.5.3
     # via mlflow
 idna==3.20
     # via
     #   anyio
     #   httpx
+    #   httpx2
     #   jsonschema
     #   requests
     #   yarl
@@ -549,6 +559,10 @@ traitlets==5.16.1
     #   nbformat
 triton==3.8.0 ; sys_platform == 'linux'
     # via torch
+truststore==0.10.5 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
 typing-extensions==4.16.0
     # via
     #   alembic
@@ -582,7 +596,9 @@ urllib3==2.8.0
     #   docker
     #   requests
 uvicorn==0.54.0
-    # via mlflow-skinny
+    # via
+    #   mlflow-skinny
+    #   predictive-maintenance
 waitress==3.0.2 ; sys_platform == 'win32'
     # via mlflow
 wcwidth==0.9.4

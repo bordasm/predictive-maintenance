@@ -1,0 +1,37 @@
+{
+  "observations": [
+    {
+      "volt": 223.853296420621,
+      "rotate": 397.30812673297,
+      "pressure": 102.874438112839,
+      "vibration": 42.9838076641919,
+      "volt_mean_3h": 223.853296420621,
+      "volt_std_3h": 0.0,
+      "rotate_mean_3h": 397.30812673297,
+      "rotate_std_3h": 0.0,
+      "pressure_mean_3h": 102.874438112839,
+      "pressure_std_3h": 0.0,
+      "vibration_mean_3h": 42.9838076641919,
+      "vibration_std_3h": 0.0,
+      "volt_mean_24h": 223.853296420621,
+      "volt_std_24h": 0.0,
+      "rotate_mean_24h": 397.30812673297,
+      "rotate_std_24h": 0.0,
+      "pressure_mean_24h": 102.874438112839,
+      "pressure_std_24h": 0.0,
+      "vibration_mean_24h": 42.9838076641919,
+      "vibration_std_24h": 0.0,
+      "error1_count_24h": 0.0,
+      "error2_count_24h": 0.0,
+      "error3_count_24h": 0.0,
+      "error4_count_24h": 0.0,
+      "error5_count_24h": 0.0,
+      "days_since_comp1_maintenance": 214.0,
+      "days_since_comp2_maintenance": 214.0,
+      "days_since_comp3_maintenance": 4.0,
+      "days_since_comp4_maintenance": 34.0,
+      "age": 7,
+      "model": "model4"
+    }
+  ]
+}
