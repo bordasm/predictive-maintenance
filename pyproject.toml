@@ -1,0 +1,26 @@
+[project]
+name = "predictive-maintenance"
+version = "0.1.0"
+description = "End-to-end predictive maintenance and MLOps portfolio project"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "numpy==2.5.4",
+    "pandas==3.1.0",
+    "scikit-learn==1.9.1",
+    "torch==2.14.1",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel==7.4.0",
+    "jupyterlab==4.6.4",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
