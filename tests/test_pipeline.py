@@ -5,6 +5,7 @@ from pathlib import Path
 
 from predictive_maintenance.data.load import RawTables
 from predictive_maintenance.data.schema import TABLE_SCHEMAS
+from predictive_maintenance.experiments import run_experiments
 from predictive_maintenance.pipeline import run_pipeline
 
 
@@ -56,3 +57,46 @@ report_dir = "{report_dir.as_posix()}"
     assert set(manifest["train"]).isdisjoint(manifest["validation"])
     assert set(manifest["train"]).isdisjoint(manifest["test"])
     assert set(manifest["validation"]).isdisjoint(manifest["test"])
+
+    experiment_config = tmp_path / "experiments.toml"
+    experiment_config.write_text(
+        f"""
+[data]
+raw_dir = "{raw_dir.as_posix()}"
+feature_path = "{processed_path.as_posix()}"
+
+[tracking]
+database = "{(tmp_path / 'mlflow.db').as_posix()}"
+artifact_directory = "{(tmp_path / 'mlruns').as_posix()}"
+experiment_name = "synthetic-test"
+
+[evaluation]
+horizon_hours = 24
+selection_metric = "average_precision"
+
+[baseline]
+max_iterations = 200
+
+[challenger]
+learning_rate = 0.1
+max_iterations = 5
+max_leaf_nodes = 7
+min_samples_leaf = 5
+l2_regularization = 1.0
+
+[output]
+artifact_dir = "{(tmp_path / 'experiment-artifacts').as_posix()}"
+report_dir = "{(tmp_path / 'comparison').as_posix()}"
+""".strip(),
+        encoding="utf-8",
+    )
+
+    comparison = run_experiments(experiment_config)
+
+    assert set(comparison["models"]) == {
+        "logistic_regression",
+        "hist_gradient_boosting",
+    }
+    assert comparison["champion"] in comparison["models"]
+    assert (tmp_path / "comparison" / "comparison.json").exists()
+    assert (tmp_path / "experiment-artifacts" / "champion.json").exists()

@@ -1,0 +1,26 @@
+[data]
+raw_dir = "data/raw/azure_pdm"
+feature_path = "data/processed/azure_pdm_features.parquet"
+
+[tracking]
+database = "mlflow.db"
+artifact_directory = "mlruns"
+experiment_name = "azure-pdm-24h-failure"
+
+[evaluation]
+horizon_hours = 24
+selection_metric = "average_precision"
+
+[baseline]
+max_iterations = 1000
+
+[challenger]
+learning_rate = 0.08
+max_iterations = 150
+max_leaf_nodes = 31
+min_samples_leaf = 50
+l2_regularization = 1.0
+
+[output]
+artifact_dir = "artifacts/experiments"
+report_dir = "reports/model_comparison"

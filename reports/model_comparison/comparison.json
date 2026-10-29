@@ -1,0 +1,115 @@
+{
+  "experiment_name": "azure-pdm-24h-failure",
+  "tracking_backend": "sqlite",
+  "tracking_database": "mlflow.db",
+  "feature_path": "data\\processed\\azure_pdm_features.parquet",
+  "feature_sha256": "1e4ef465ec01186af164013063365182de38b1c9520c9eacb111409e2947189e",
+  "runtime": {
+    "python": "3.14.10",
+    "scikit_learn": "1.9.1",
+    "mlflow": "3.17.2"
+  },
+  "git": {
+    "commit": "e792f74dfe2b68c93c442dc39afa48700fec07e5",
+    "dirty": true
+  },
+  "selection_partition": "validation",
+  "selection_metric": "average_precision",
+  "champion": "hist_gradient_boosting",
+  "models": {
+    "logistic_regression": {
+      "validation": {
+        "rows": 131415,
+        "positive_rows": 2814,
+        "positive_rate": 0.021413080698550392,
+        "threshold": 0.9497289031099062,
+        "average_precision": 0.8835376507037181,
+        "roc_auc": 0.9941588503743086,
+        "precision": 0.817411150961852,
+        "recall": 0.8909026297085999,
+        "f1": 0.8525760925012753,
+        "false_positive_rows_per_machine_day": 0.10200364298724955,
+        "false_positive_rows_per_machine_week": 0.7140255009107468,
+        "confusion_matrix": {
+          "tn": 128041,
+          "fp": 560,
+          "fn": 307,
+          "tp": 2507
+        }
+      },
+      "test": {
+        "rows": 131415,
+        "positive_rows": 2856,
+        "positive_rate": 0.021732678917931743,
+        "threshold": 0.9497289031099062,
+        "average_precision": 0.8583719954779361,
+        "roc_auc": 0.9970275803131559,
+        "precision": 0.7395058052991962,
+        "recall": 0.8697478991596639,
+        "f1": 0.7993563958165728,
+        "false_positive_rows_per_machine_day": 0.15938069216757741,
+        "false_positive_rows_per_machine_week": 1.115664845173042,
+        "confusion_matrix": {
+          "tn": 127684,
+          "fp": 875,
+          "fn": 372,
+          "tp": 2484
+        },
+        "failure_events": {
+          "eligible_failure_events": 126,
+          "detected_failure_events": 122,
+          "event_recall": 0.9682539682539683,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "mlflow_run_id": "969c7f56a4b147ca97097678283e385a"
+    },
+    "hist_gradient_boosting": {
+      "validation": {
+        "rows": 131415,
+        "positive_rows": 2814,
+        "positive_rate": 0.021413080698550392,
+        "threshold": 0.6860872735765084,
+        "average_precision": 0.9865772963965045,
+        "roc_auc": 0.9973764795843777,
+        "precision": 0.9941284403669725,
+        "recall": 0.9626865671641791,
+        "f1": 0.9781549016067882,
+        "false_positive_rows_per_machine_day": 0.0029143897996357013,
+        "false_positive_rows_per_machine_week": 0.02040072859744991,
+        "confusion_matrix": {
+          "tn": 128585,
+          "fp": 16,
+          "fn": 105,
+          "tp": 2709
+        }
+      },
+      "test": {
+        "rows": 131415,
+        "positive_rows": 2856,
+        "positive_rate": 0.021732678917931743,
+        "threshold": 0.6860872735765084,
+        "average_precision": 0.9999233629855723,
+        "roc_auc": 0.9999983930908528,
+        "precision": 0.9968586387434555,
+        "recall": 1.0,
+        "f1": 0.9984268484530676,
+        "false_positive_rows_per_machine_day": 0.001639344262295082,
+        "false_positive_rows_per_machine_week": 0.011475409836065573,
+        "confusion_matrix": {
+          "tn": 128550,
+          "fp": 9,
+          "fn": 0,
+          "tp": 2856
+        },
+        "failure_events": {
+          "eligible_failure_events": 126,
+          "detected_failure_events": 126,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "mlflow_run_id": "97293e9d3f3a456998d7785bc1ac9f72"
+    }
+  }
+}

@@ -12,6 +12,6 @@ data/interim/
 data/processed/
 
 artifacts/
-models/
+/models/
 mlruns/
 *.db

@@ -1,8 +1,9 @@
 # Predictive Maintenance
 
-An end-to-end predictive-maintenance and MLOps portfolio project. The first
-milestone predicts whether any machine component will fail during the next
-24 hours using the Microsoft Azure Predictive Maintenance sample dataset.
+An end-to-end predictive-maintenance and MLOps portfolio project. It predicts
+whether any machine component will fail during the next 24 hours using the
+Microsoft Azure Predictive Maintenance sample dataset, then tracks and compares
+candidate models with MLflow.
 
 The implementation deliberately separates exploratory notebooks from reusable
 code. Older TensorFlow/Keras experiments are kept under `notebooks/legacy`.
@@ -21,6 +22,22 @@ The baseline pipeline:
 
 The test set is not used for preprocessing, model fitting, or threshold
 selection.
+
+## Second milestone
+
+The experiment pipeline:
+
+1. loads the versioned feature table produced by the baseline pipeline;
+2. trains the logistic-regression baseline and a histogram gradient-boosting
+   challenger on exactly the same rows;
+3. applies native categorical splits and balanced class weights in the challenger;
+4. selects each decision threshold on validation data;
+5. logs parameters, validation/test metrics, model files, data fingerprints, and
+   run IDs to a local MLflow experiment;
+6. selects the champion by validation PR-AUC and writes a comparison report and
+   champion manifest.
+
+The held-out test result is reported only after model selection.
 
 ## Data
 
@@ -63,6 +80,20 @@ Run the complete baseline pipeline:
 uv run python -m predictive_maintenance.pipeline --config configs/baseline.toml
 ```
 
+Run the tracked baseline/challenger comparison:
+
+```powershell
+uv run python -m predictive_maintenance.experiments --config configs/experiments.toml
+```
+
+Open the local MLflow UI after at least one experiment run:
+
+```powershell
+uv run mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --port 5000
+```
+
+Then open `http://127.0.0.1:5000`.
+
 Generated outputs:
 
 ```text
@@ -72,6 +103,13 @@ artifacts/baseline/metadata.json
 artifacts/baseline/split_manifest.json
 reports/baseline/metrics.json
 reports/baseline/README.md
+artifacts/experiments/champion.json
+artifacts/experiments/hist_gradient_boosting.joblib
+artifacts/experiments/logistic_regression.joblib
+reports/model_comparison/comparison.json
+reports/model_comparison/README.md
+mlflow.db
+mlruns/
 ```
 
 The model and large data artifacts are excluded from Git. The compact report is
@@ -89,3 +127,16 @@ and its [machine-readable metrics](reports/baseline/metrics.json).
 The source dataset is simulated. These numbers demonstrate the implementation and
 evaluation workflow; they should not be read as expected performance on real
 industrial equipment.
+
+## Model comparison result
+
+The histogram gradient-boosting model was selected as champion because its
+validation PR-AUC reached **0.987**, compared with **0.884** for logistic
+regression. On held-out test machines it reached **0.9999 PR-AUC**, **0.997
+precision**, **1.000 recall**, and detected **126 of 126 eligible failure
+events**. See the [comparison report](reports/model_comparison/README.md) and
+[machine-readable results](reports/model_comparison/comparison.json).
+
+The near-perfect challenger score reflects the strong, synthetic patterns in this
+sample dataset. It is useful for verifying the MLOps workflow, but it is not a
+credible production-performance estimate for another machine fleet.

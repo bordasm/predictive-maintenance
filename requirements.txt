@@ -2,10 +2,24 @@
 #    uv export --format requirements.txt --all-groups --no-hashes --no-emit-project --output-file requirements.txt
 --extra-index-url https://download.pytorch.org/whl/cu126
 
+aiohappyeyeballs==2.7.1
+    # via aiohttp
+aiohttp==3.14.5
+    # via mlflow
+aiosignal==1.4.0
+    # via aiohttp
+alembic==1.20.1
+    # via mlflow
+annotated-doc==0.0.5
+    # via fastapi
+annotated-types==0.8.0
+    # via pydantic
 anyio==4.15.1
     # via
     #   httpx
     #   jupyter-server
+    #   mlflow-skinny
+    #   starlette
 appnope==1.0.0 ; sys_platform == 'darwin'
     # via ipykernel
 argon2-cffi==25.1.0
@@ -20,6 +34,7 @@ async-lru==2.4.0
     # via jupyterlab
 attrs==26.1.0
     # via
+    #   aiohttp
     #   jsonschema
     #   referencing
 babel==2.18.0
@@ -28,57 +43,123 @@ beautifulsoup4==4.15.0
     # via nbconvert
 bleach==6.4.0
     # via nbconvert
+blinker==1.9.0
+    # via flask
+cachetools==7.2.7
+    # via
+    #   mlflow-skinny
+    #   mlflow-tracing
 certifi==2026.10.23
     # via
+    #   databricks-sdk
     #   httpcore
     #   httpx
     #   requests
 cffi==2.1.1
     # via
     #   argon2-cffi-bindings
+    #   cryptography
     #   pyzmq
 charset-normalizer==3.5.2
     # via requests
+click==8.5.0
+    # via
+    #   flask
+    #   mlflow-skinny
+    #   uvicorn
 cloudpickle==3.1.2
-    # via joblib
+    # via
+    #   joblib
+    #   mlflow-skinny
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   ipython
     #   pytest
 comm==0.2.3
     # via ipykernel
+contourpy==1.4.0
+    # via matplotlib
+cryptography==50.0.2
+    # via
+    #   google-auth
+    #   mlflow
 cuda-bindings==12.9.10 ; sys_platform == 'linux'
     # via torch
 cuda-pathfinder==1.8.5 ; sys_platform == 'linux'
     # via cuda-bindings
 cuda-toolkit==12.6.3 ; sys_platform == 'linux'
     # via torch
+cycler==0.12.1
+    # via matplotlib
+databricks-sdk==0.158.0
+    # via
+    #   mlflow-skinny
+    #   mlflow-tracing
 debugpy==1.8.22
     # via ipykernel
 defusedxml==0.7.1
     # via nbconvert
+docker==7.2.0
+    # via mlflow
 executing==2.3.0
     # via stack-data
+fastapi==0.162.0
+    # via mlflow-skinny
 fastjsonschema==2.22.2
     # via nbformat
 filelock==4.2.4
     # via torch
+flask==3.1.3
+    # via
+    #   flask-cors
+    #   mlflow
+flask-cors==6.0.5
+    # via mlflow
+fonttools==4.68.0
+    # via matplotlib
 fqdn==1.6.0
     # via jsonschema
+frozenlist==1.8.0
+    # via
+    #   aiohttp
+    #   aiosignal
 fsspec==2026.9.0
     # via torch
+gitdb==4.0.12
+    # via gitpython
+gitpython==3.2.1
+    # via mlflow-skinny
+google-auth==2.62.0
+    # via databricks-sdk
+graphene==3.4.3
+    # via mlflow
+graphql-core==3.2.13
+    # via
+    #   graphene
+    #   graphql-relay
+graphql-relay==3.2.0
+    # via graphene
+gunicorn==26.2.0 ; sys_platform != 'win32'
+    # via mlflow
 h11==0.16.0
-    # via httpcore
+    # via
+    #   httpcore
+    #   uvicorn
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via jupyterlab
+huey==3.5.3
+    # via mlflow
 idna==3.20
     # via
     #   anyio
     #   httpx
     #   jsonschema
     #   requests
+    #   yarl
+importlib-metadata==9.1.0
+    # via mlflow-skinny
 iniconfig==2.3.1
     # via pytest
 ipykernel==7.4.0
@@ -89,10 +170,13 @@ ipython-pygments-lexers==1.1.1
     # via ipython
 isoduration==20.11.0
     # via jsonschema
+itsdangerous==2.2.0
+    # via flask
 jedi==0.20.1
     # via ipython
 jinja2==3.1.6
     # via
+    #   flask
     #   jupyter-server
     #   jupyterlab
     #   jupyterlab-server
@@ -147,20 +231,39 @@ jupyterlab-pygments==0.3.0
     # via nbconvert
 jupyterlab-server==2.28.1
     # via jupyterlab
+kiwisolver==1.5.1
+    # via matplotlib
 lark==1.3.1
     # via rfc3987-syntax
+mako==1.4.3
+    # via alembic
 markupsafe==3.0.4
     # via
+    #   flask
     #   jinja2
+    #   mako
     #   nbconvert
+    #   werkzeug
+matplotlib==3.11.2
+    # via mlflow
 matplotlib-inline==0.2.2
     # via
     #   ipykernel
     #   ipython
 mistune==3.4.0
     # via nbconvert
+mlflow==3.17.2
+    # via predictive-maintenance
+mlflow-skinny==3.17.2
+    # via mlflow
+mlflow-tracing==3.17.2
+    # via mlflow
 mpmath==1.3.0
     # via sympy
+multidict==7.2.1
+    # via
+    #   aiohttp
+    #   yarl
 narwhals==2.28.0
     # via scikit-learn
 nbclient==0.11.0
@@ -180,10 +283,14 @@ notebook-shim==0.2.4
     # via jupyterlab
 numpy==2.5.4
     # via
+    #   contourpy
+    #   matplotlib
+    #   mlflow
     #   pandas
     #   predictive-maintenance
     #   scikit-learn
     #   scipy
+    #   skops
 nvidia-cublas-cu12==12.6.4.1 ; sys_platform == 'linux'
     # via
     #   cuda-toolkit
@@ -223,6 +330,23 @@ nvidia-nvshmem-cu12==3.4.5 ; sys_platform == 'linux'
     # via torch
 nvidia-nvtx-cu12==12.6.77 ; sys_platform == 'linux'
     # via cuda-toolkit
+opentelemetry-api==1.45.2
+    # via
+    #   fastapi
+    #   mlflow-skinny
+    #   mlflow-tracing
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+opentelemetry-proto==1.45.2
+    # via
+    #   mlflow-skinny
+    #   mlflow-tracing
+opentelemetry-sdk==1.45.2
+    # via
+    #   mlflow-skinny
+    #   mlflow-tracing
+opentelemetry-semantic-conventions==0.66b2
+    # via opentelemetry-sdk
 packaging==26.3
     # via
     #   ipykernel
@@ -230,24 +354,44 @@ packaging==26.3
     #   jupyter-server
     #   jupyterlab
     #   jupyterlab-server
+    #   matplotlib
+    #   mlflow-skinny
+    #   mlflow-tracing
     #   nbconvert
     #   pytest
+    #   skops
 pandas==3.1.0
-    # via predictive-maintenance
+    # via
+    #   mlflow
+    #   predictive-maintenance
 pandocfilters==1.5.1
     # via nbconvert
 parso==0.8.7
     # via jedi
 pexpect==4.9.0 ; sys_platform != 'emscripten' and sys_platform != 'win32'
     # via ipython
+pillow==13.0.0
+    # via matplotlib
 platformdirs==4.14.0
     # via jupyter-core
 pluggy==1.7.0
     # via pytest
+prettytable==3.18.0
+    # via skops
 prometheus-client==0.26.0
     # via jupyter-server
 prompt-toolkit==3.0.53
     # via ipython
+propcache==0.5.4
+    # via
+    #   aiohttp
+    #   yarl
+protobuf==7.36.2
+    # via
+    #   databricks-sdk
+    #   mlflow-skinny
+    #   mlflow-tracing
+    #   opentelemetry-proto
 psutil==7.2.2 ; sys_platform != 'cygwin' and sys_platform != 'emscripten'
     # via ipython
 ptyprocess==0.7.0 ; os_name != 'nt' or (sys_platform != 'emscripten' and sys_platform != 'win32')
@@ -256,31 +400,54 @@ ptyprocess==0.7.0 ; os_name != 'nt' or (sys_platform != 'emscripten' and sys_pla
     #   terminado
 pure-eval==0.2.4
     # via stack-data
-pyarrow==26.0.0
-    # via predictive-maintenance
+pyarrow==25.0.0
+    # via
+    #   mlflow
+    #   predictive-maintenance
+pyasn1==0.6.5
+    # via pyasn1-modules
+pyasn1-modules==0.4.2
+    # via google-auth
 pycparser==3.12 ; implementation_name != 'PyPy'
     # via cffi
+pydantic==2.14.2
+    # via
+    #   fastapi
+    #   mlflow-skinny
+    #   mlflow-tracing
+pydantic-core==2.50.2
+    # via pydantic
 pygments==2.21.0
     # via
     #   ipython
     #   ipython-pygments-lexers
     #   nbconvert
     #   pytest
+pyparsing==3.3.3
+    # via matplotlib
 pytest==9.2.0
-python-dateutil==3.0.0
+python-dateutil==2.9.0.post0
     # via
     #   arrow
+    #   graphene
     #   jupyter-client
+    #   matplotlib
     #   pandas
+python-dotenv==1.2.4
+    # via mlflow-skinny
 python-json-logger==4.2.0
     # via jupyter-events
+pywin32==312 ; sys_platform == 'win32'
+    # via docker
 pywinpty==3.1.2 ; os_name == 'nt'
     # via
     #   jupyter-server
     #   jupyter-server-terminals
     #   terminado
 pyyaml==6.0.3
-    # via jupyter-events
+    # via
+    #   jupyter-events
+    #   mlflow-skinny
 pyzmq==27.2.0
     # via
     #   ipykernel
@@ -292,7 +459,11 @@ referencing==0.37.0
     #   jsonschema-specifications
     #   jupyter-events
 requests==2.34.2
-    # via jupyterlab-server
+    # via
+    #   databricks-sdk
+    #   docker
+    #   jupyterlab-server
+    #   mlflow-skinny
 rfc3339-validator==0.1.4
     # via
     #   jsonschema
@@ -308,9 +479,15 @@ rpds-py==2026.9.1
     #   jsonschema
     #   referencing
 scikit-learn==1.9.1
-    # via predictive-maintenance
+    # via
+    #   mlflow
+    #   predictive-maintenance
+    #   skops
 scipy==1.18.1
-    # via scikit-learn
+    # via
+    #   mlflow
+    #   scikit-learn
+    #   skops
 send2trash==2.1.0
     # via jupyter-server
 setuptools==84.2.1
@@ -319,10 +496,24 @@ six==1.17.0
     # via
     #   python-dateutil
     #   rfc3339-validator
+skops==0.16.0
+    # via mlflow
+smmap==5.0.3
+    # via gitdb
 soupsieve==3.0.4
     # via beautifulsoup4
+sqlalchemy==2.1.6
+    # via
+    #   alembic
+    #   mlflow
+sqlparse==0.6.0
+    # via mlflow-skinny
 stack-data==0.6.3
     # via ipython
+starlette==1.10.0
+    # via
+    #   fastapi
+    #   mlflow-skinny
 sympy==1.14.0
     # via torch
 terminado==0.18.1
@@ -360,21 +551,44 @@ triton==3.8.0 ; sys_platform == 'linux'
     # via torch
 typing-extensions==4.16.0
     # via
+    #   alembic
     #   anyio
     #   beautifulsoup4
+    #   fastapi
+    #   graphene
     #   jupyter-client
+    #   mlflow-skinny
+    #   opentelemetry-api
+    #   opentelemetry-sdk
+    #   opentelemetry-semantic-conventions
+    #   pydantic
+    #   pydantic-core
+    #   sqlalchemy
     #   torch
+    #   typing-inspection
+typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   pydantic
 tzdata==2026.6
     # via
     #   arrow
     #   pandas
-    #   python-dateutil
 uri-template==1.3.0
     # via jsonschema
 urllib3==2.8.0
-    # via requests
+    # via
+    #   databricks-sdk
+    #   docker
+    #   requests
+uvicorn==0.54.0
+    # via mlflow-skinny
+waitress==3.0.2 ; sys_platform == 'win32'
+    # via mlflow
 wcwidth==0.9.4
-    # via prompt-toolkit
+    # via
+    #   prettytable
+    #   prompt-toolkit
 webcolors==25.10.0
     # via jsonschema
 webencodings==0.6.1
@@ -383,3 +597,11 @@ webencodings==0.6.1
     #   tinycss2
 websocket-client==1.9.2
     # via jupyter-server
+werkzeug==3.1.9
+    # via
+    #   flask
+    #   flask-cors
+yarl==1.25.1
+    # via aiohttp
+zipp==4.1.2
+    # via importlib-metadata
