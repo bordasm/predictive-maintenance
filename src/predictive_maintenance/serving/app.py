@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import os
+from uuid import uuid4
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 from time import perf_counter
 
-from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.responses import Response
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from predictive_maintenance.monitoring.store import (
@@ -22,6 +23,10 @@ from predictive_maintenance.observability.metrics import (
     normalize_http_path,
 )
 from predictive_maintenance.serving.model_service import ModelService
+from predictive_maintenance.serving.security import (
+    build_api_key_guard,
+    valid_request_id,
+)
 from predictive_maintenance.serving.schemas import (
     HealthResponse,
     ModelInfoResponse,
@@ -33,11 +38,14 @@ from predictive_maintenance.serving.schemas import (
 
 DEFAULT_MANIFEST = Path("artifacts/experiments/champion.json")
 DEFAULT_PREDICTION_DATABASE = Path("monitoring/predictions.db")
+DEFAULT_MAX_REQUEST_BYTES = 1024 * 1024
 
 
 def create_app(
     manifest_path: str | Path | None = None,
     prediction_database: str | Path | None = None,
+    api_key: str | None = None,
+    max_request_bytes: int | None = None,
 ) -> FastAPI:
     configured_manifest = Path(
         manifest_path
@@ -47,6 +55,13 @@ def create_app(
         prediction_database
         or os.environ.get("PREDMAINT_PREDICTION_DB", DEFAULT_PREDICTION_DATABASE)
     )
+    configured_api_key = api_key or os.environ.get("PREDMAINT_API_KEY")
+    configured_max_request_bytes = max_request_bytes or int(
+        os.environ.get("PREDMAINT_MAX_REQUEST_BYTES", DEFAULT_MAX_REQUEST_BYTES)
+    )
+    if configured_max_request_bytes <= 0:
+        raise ValueError("Maximum request size must be positive")
+    require_api_key = build_api_key_guard(configured_api_key)
     metrics = ServiceMetrics()
 
     @asynccontextmanager
@@ -66,28 +81,54 @@ def create_app(
     application = FastAPI(
         title="Predictive Maintenance Inference API",
         description="Predict any component failure within the next 24 hours.",
-        version="1.2.0",
+        version="1.3.0",
         lifespan=lifespan,
     )
 
     @application.middleware("http")
     async def observe_http(request: Request, call_next):
-        if request.url.path == "/metrics":
-            return await call_next(request)
+        record_metrics = request.url.path != "/metrics"
+        supplied_request_id = request.headers.get("X-Request-ID")
+        request_id = (
+            supplied_request_id if valid_request_id(supplied_request_id) else uuid4().hex
+        )
+        request.state.request_id = request_id
         started_at = perf_counter()
         response_status = 500
         try:
-            response = await call_next(request)
+            content_length = request.headers.get("content-length")
+            try:
+                request_bytes = int(content_length) if content_length else 0
+            except ValueError:
+                request_bytes = -1
+            if request_bytes < 0:
+                response = JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"detail": "Invalid Content-Length header"},
+                )
+            elif request_bytes > configured_max_request_bytes:
+                response = JSONResponse(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    content={"detail": "Request body is too large"},
+                )
+            else:
+                response = await call_next(request)
             response_status = response.status_code
+            response.headers["X-Request-ID"] = request_id
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            response.headers["X-Frame-Options"] = "DENY"
+            response.headers["Referrer-Policy"] = "no-referrer"
+            response.headers["Cache-Control"] = "no-store"
             return response
         finally:
-            metric_path = normalize_http_path(request.url.path)
-            metrics.http_requests.labels(
-                request.method, metric_path, str(response_status)
-            ).inc()
-            metrics.http_duration.labels(
-                request.method, metric_path
-            ).observe(perf_counter() - started_at)
+            if record_metrics:
+                metric_path = normalize_http_path(request.url.path)
+                metrics.http_requests.labels(
+                    request.method, metric_path, str(response_status)
+                ).inc()
+                metrics.http_duration.labels(
+                    request.method, metric_path
+                ).observe(perf_counter() - started_at)
 
     @application.get("/metrics", include_in_schema=False)
     def prometheus_metrics() -> Response:
@@ -104,7 +145,10 @@ def create_app(
         )
 
     @application.get(
-        "/v1/model-info", response_model=ModelInfoResponse, tags=["inference"]
+        "/v1/model-info",
+        response_model=ModelInfoResponse,
+        tags=["inference"],
+        dependencies=[Depends(require_api_key)],
     )
     def model_info(request: Request) -> ModelInfoResponse:
         service: ModelService = request.app.state.model_service
@@ -119,7 +163,10 @@ def create_app(
         )
 
     @application.post(
-        "/v1/predict", response_model=PredictionResponse, tags=["inference"]
+        "/v1/predict",
+        response_model=PredictionResponse,
+        tags=["inference"],
+        dependencies=[Depends(require_api_key)],
     )
     def predict(payload: PredictionBatch, request: Request) -> PredictionResponse:
         service: ModelService = request.app.state.model_service

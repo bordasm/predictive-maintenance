@@ -40,6 +40,12 @@ from metric labels. The Compose stack provisions scrape configuration, four SLO
 alert rules, and the Grafana service dashboard; details and measured local load
 results are in the [observability report](../observability/README.md).
 
+Set `PREDMAINT_API_KEY` to require the `X-API-Key` header on both versioned
+inference endpoints. The public health and metrics endpoints are intended for
+private operational networks. Request correlation, security headers, body-size
+enforcement, container restrictions, and Kubernetes deployment constraints are
+documented in the [security report](../security/README.md).
+
 The Docker and Compose definitions are included, but the local Docker daemon was
 not available during verification. The native Uvicorn service and its complete
 HTTP request path were verified on Python 3.14.10.

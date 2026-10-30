@@ -114,6 +114,26 @@ The local 200-request test completed with **0% errors**, **31.70 requests/s**, a
 **273.23 ms p95 latency**. See the [observability report](reports/observability/README.md)
 and [load-test result](reports/observability/LOAD_TEST.md).
 
+## Seventh milestone
+
+The secure deployment layer:
+
+1. protects `/v1/*` endpoints with optional `X-API-Key` authentication using
+   constant-time comparison;
+2. adds correlation IDs, security headers, no-store responses, and a 1 MiB body
+   limit before JSON parsing;
+3. hardens the Compose API container with a read-only root filesystem, dropped
+   capabilities, disabled privilege escalation, and bounded temporary storage;
+4. provides Kubernetes manifests with probes, resource limits, Secret-based
+   credentials, seccomp, non-root execution, and separate persistent volumes;
+5. keeps the SQLite deployment at one replica and documents the external-storage
+   prerequisite for horizontal scaling;
+6. adds pinned CodeQL scanning and weekly Dependabot updates for Python and
+   GitHub Actions dependencies.
+
+See the [security report](reports/security/README.md) and the
+[Kubernetes deployment contract](deploy/kubernetes/README.md).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -182,6 +202,13 @@ Run the checked-in request against all public endpoints:
 uv run python scripts/smoke_api.py
 ```
 
+To exercise authentication locally, copy `.env.example` to `.env`, replace the
+example value, restart the API, and pass the same value to the client:
+
+```powershell
+uv run python scripts/smoke_api.py --api-key $env:PREDMAINT_API_KEY
+```
+
 Build the training reference profile and report on logged API predictions:
 
 ```powershell
@@ -237,6 +264,8 @@ With the API running, reproduce the bounded load test with:
 uv run python scripts/load_test_api.py --requests 200 --concurrency 8
 ```
 
+For an authenticated API, append `--api-key $env:PREDMAINT_API_KEY`.
+
 Generated outputs:
 
 ```text
@@ -266,6 +295,9 @@ reports/observability/load-test.json
 reports/observability/LOAD_TEST.md
 observability/prometheus/alerts.yml
 observability/grafana/dashboards/service-overview.json
+deploy/kubernetes/base/deployment.yaml
+deploy/kubernetes/base/service.yaml
+reports/security/README.md
 mlflow.db
 mlruns/
 ```

@@ -62,7 +62,7 @@ def test_inference_api_loads_champion_and_validates_requests(
         "features": payload,
     }
     with TestClient(create_app(manifest_path, database_path)) as client:
-        health = client.get("/health")
+        health = client.get("/health", headers={"X-Request-ID": "trace-test-001"})
         info = client.get("/v1/model-info")
         prediction = client.post(
             "/v1/predict", json={"observations": [request_observation]}
@@ -89,11 +89,17 @@ def test_inference_api_loads_champion_and_validates_requests(
         "model": "hist_gradient_boosting",
         "prediction_logging": True,
     }
+    assert health.headers["X-Request-ID"] == "trace-test-001"
+    assert health.headers["X-Content-Type-Options"] == "nosniff"
+    assert health.headers["X-Frame-Options"] == "DENY"
     assert info.status_code == 200
     assert info.json()["feature_count"] == len(features)
     assert prediction.status_code == 200
     assert len(prediction.json()["predictions"]) == 1
-    assert prediction.json()["predictions"][0]["observation_id"] == request_observation["observation_id"]
+    assert (
+        prediction.json()["predictions"][0]["observation_id"]
+        == request_observation["observation_id"]
+    )
     assert 0 <= prediction.json()["predictions"][0]["failure_probability"] <= 1
     assert invalid.status_code == 422
     assert duplicate.status_code == 409
@@ -114,3 +120,40 @@ def test_inference_api_loads_champion_and_validates_requests(
     assert stored[0][0] == request_observation["observation_id"]
     assert stored[0][1] == "hist_gradient_boosting"
     assert json.loads(stored[0][2])["volt"] == payload["volt"]
+
+    with TestClient(
+        create_app(
+            manifest_path,
+            tmp_path / "secured-predictions.db",
+            api_key="test-secret",
+            max_request_bytes=100,
+        )
+    ) as secured_client:
+        public_health = secured_client.get("/health")
+        missing_key = secured_client.get("/v1/model-info")
+        wrong_key = secured_client.get(
+            "/v1/model-info", headers={"X-API-Key": "wrong"}
+        )
+        authorized = secured_client.get(
+            "/v1/model-info", headers={"X-API-Key": "test-secret"}
+        )
+        oversized = secured_client.post(
+            "/v1/predict",
+            headers={"X-API-Key": "test-secret"},
+            json={"observations": [request_observation]},
+        )
+        openapi = secured_client.get("/openapi.json")
+
+    assert public_health.status_code == 200
+    assert missing_key.status_code == 401
+    assert missing_key.headers["WWW-Authenticate"] == "ApiKey"
+    assert wrong_key.status_code == 401
+    assert authorized.status_code == 200
+    assert oversized.status_code == 413
+    assert oversized.json() == {"detail": "Request body is too large"}
+    security_schemes = openapi.json()["components"]["securitySchemes"]
+    assert security_schemes["APIKeyHeader"] == {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+    }

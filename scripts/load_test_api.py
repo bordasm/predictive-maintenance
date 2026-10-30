@@ -20,7 +20,11 @@ from predictive_maintenance.observability.load_test import (
 
 
 def _send_request(
-    url: str, template: dict[str, Any], index: int, timeout: float
+    url: str,
+    template: dict[str, Any],
+    index: int,
+    timeout: float,
+    api_key: str | None,
 ) -> RequestResult:
     payload = copy.deepcopy(template)
     observation = payload["observations"][0]
@@ -28,10 +32,13 @@ def _send_request(
     observation["observed_at"] = (
         datetime.now(UTC) + timedelta(microseconds=index)
     ).isoformat()
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["X-API-Key"] = api_key
     request = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json"},
+        headers=headers,
         method="POST",
     )
     started_at = time.perf_counter()
@@ -87,7 +94,10 @@ use an external database or asynchronous event sink and repeat the capacity test
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
-    parser.add_argument("--payload", type=Path, default=Path("examples/prediction_request.json"))
+    parser.add_argument("--api-key")
+    parser.add_argument(
+        "--payload", type=Path, default=Path("examples/prediction_request.json")
+    )
     parser.add_argument("--requests", type=int, default=200)
     parser.add_argument("--concurrency", type=int, default=8)
     parser.add_argument("--timeout", type=float, default=10)
@@ -101,7 +111,11 @@ def main() -> None:
         results = list(
             executor.map(
                 lambda index: _send_request(
-                    f"{args.base_url}/v1/predict", template, index, args.timeout
+                    f"{args.base_url}/v1/predict",
+                    template,
+                    index,
+                    args.timeout,
+                    args.api_key,
                 ),
                 range(args.requests),
             )

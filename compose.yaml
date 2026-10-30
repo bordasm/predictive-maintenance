@@ -3,9 +3,19 @@ services:
     build: .
     ports:
       - "8000:8000"
+    environment:
+      PREDMAINT_API_KEY: ${PREDMAINT_API_KEY:-}
+      PREDMAINT_MAX_REQUEST_BYTES: "1048576"
     volumes:
       - ./artifacts/experiments:/models:ro
       - ./monitoring:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
 
   prometheus:
