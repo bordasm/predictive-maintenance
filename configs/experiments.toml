@@ -24,3 +24,4 @@ l2_regularization = 1.0
 [output]
 artifact_dir = "artifacts/experiments"
 report_dir = "reports/model_comparison"
+candidate_manifest = "candidate.json"

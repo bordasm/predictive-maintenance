@@ -10,7 +10,7 @@
     "mlflow": "3.17.2"
   },
   "git": {
-    "commit": "e792f74dfe2b68c93c442dc39afa48700fec07e5",
+    "commit": "59eb368519a2e084b999c0c463abb1f3f6ed5389",
     "dirty": true
   },
   "selection_partition": "validation",
@@ -62,7 +62,8 @@
           "median_lead_time_hours": 24.0
         }
       },
-      "mlflow_run_id": "969c7f56a4b147ca97097678283e385a"
+      "mlflow_run_id": "d471ed856f534bf9888bdab6d353631d",
+      "model_path": "artifacts\\experiments\\candidates\\d471ed856f534bf9888bdab6d353631d\\model.joblib"
     },
     "hist_gradient_boosting": {
       "validation": {
@@ -109,7 +110,8 @@
           "median_lead_time_hours": 24.0
         }
       },
-      "mlflow_run_id": "97293e9d3f3a456998d7785bc1ac9f72"
+      "mlflow_run_id": "2693190d160d4c37bd6dbb72f215e057",
+      "model_path": "artifacts\\experiments\\candidates\\2693190d160d4c37bd6dbb72f215e057\\model.joblib"
     }
   }
 }

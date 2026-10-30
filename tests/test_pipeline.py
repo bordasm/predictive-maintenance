@@ -99,4 +99,8 @@ report_dir = "{(tmp_path / 'comparison').as_posix()}"
     }
     assert comparison["champion"] in comparison["models"]
     assert (tmp_path / "comparison" / "comparison.json").exists()
-    assert (tmp_path / "experiment-artifacts" / "champion.json").exists()
+    candidate_path = tmp_path / "experiment-artifacts" / "candidate.json"
+    assert candidate_path.exists()
+    candidate = json.loads(candidate_path.read_text())
+    assert Path(candidate["model_path"]).exists()
+    assert "metrics" in candidate

@@ -1,0 +1,19 @@
+[candidate]
+manifest_path = "artifacts/experiments/candidate.json"
+comparison_path = "reports/model_comparison/comparison.json"
+
+[incumbent]
+manifest_path = "artifacts/experiments/champion.json"
+comparison_path = "reports/promotion/incumbent_metrics.json"
+
+[gate]
+minimum_validation_average_precision = 0.85
+maximum_validation_regression = 0.005
+minimum_test_average_precision = 0.85
+minimum_test_precision = 0.90
+minimum_test_event_recall = 0.95
+maximum_test_false_positives_per_machine_week = 0.10
+
+[release]
+directory = "artifacts/experiments/releases"
+decision_report_directory = "reports/promotion"

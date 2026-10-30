@@ -33,14 +33,15 @@ def test_inference_api_loads_champion_and_validates_requests(
     )
     model.fit(train[features], train["failure_within_horizon"])
 
-    model_path = tmp_path / "champion.joblib"
+    model_path = tmp_path / "releases" / "release-001" / "model.joblib"
+    model_path.parent.mkdir(parents=True)
     manifest_path = tmp_path / "champion.json"
     joblib.dump(model, model_path)
     manifest_path.write_text(
         json.dumps(
             {
                 "model": "hist_gradient_boosting",
-                "model_path": "artifacts\\experiments\\champion.joblib",
+                "model_path": "releases/release-001/model.joblib",
                 "threshold": 0.5,
                 "selection_metric": "average_precision",
                 "selection_value": 0.9,

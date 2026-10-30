@@ -1,0 +1,58 @@
+{
+  "evaluated_at": "2026-10-30T22:16:59.464657+00:00",
+  "decision": "approved",
+  "candidate": {
+    "model": "hist_gradient_boosting",
+    "mlflow_run_id": "2693190d160d4c37bd6dbb72f215e057",
+    "feature_sha256": "1e4ef465ec01186af164013063365182de38b1c9520c9eacb111409e2947189e"
+  },
+  "incumbent": {
+    "model": "hist_gradient_boosting",
+    "mlflow_run_id": "97293e9d3f3a456998d7785bc1ac9f72",
+    "feature_sha256": null
+  },
+  "checks": [
+    {
+      "name": "minimum validation average precision",
+      "candidate_value": 0.9865772963965045,
+      "operator": ">=",
+      "required_value": 0.85,
+      "passed": true
+    },
+    {
+      "name": "maximum validation regression from incumbent",
+      "candidate_value": 0.9865772963965045,
+      "operator": ">=",
+      "required_value": 0.9815772963965045,
+      "passed": true
+    },
+    {
+      "name": "minimum test average precision",
+      "candidate_value": 0.9999233629855723,
+      "operator": ">=",
+      "required_value": 0.85,
+      "passed": true
+    },
+    {
+      "name": "minimum test precision",
+      "candidate_value": 0.9968586387434555,
+      "operator": ">=",
+      "required_value": 0.9,
+      "passed": true
+    },
+    {
+      "name": "minimum test event recall",
+      "candidate_value": 1.0,
+      "operator": ">=",
+      "required_value": 0.95,
+      "passed": true
+    },
+    {
+      "name": "maximum false positives per machine-week",
+      "candidate_value": 0.011475409836065573,
+      "operator": "<=",
+      "required_value": 0.1,
+      "passed": true
+    }
+  ]
+}

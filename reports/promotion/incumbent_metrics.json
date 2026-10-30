@@ -1,0 +1,18 @@
+{
+  "model": "hist_gradient_boosting",
+  "mlflow_run_id": "97293e9d3f3a456998d7785bc1ac9f72",
+  "source": "reports/model_comparison/comparison.json at milestone 2",
+  "metrics": {
+    "validation": {
+      "average_precision": 0.9865772963965045
+    },
+    "test": {
+      "average_precision": 0.9999233629855723,
+      "precision": 0.9968586387434555,
+      "false_positive_rows_per_machine_week": 0.011475409836065573,
+      "failure_events": {
+        "event_recall": 1.0
+      }
+    }
+  }
+}

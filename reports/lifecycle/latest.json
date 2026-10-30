@@ -1,0 +1,9 @@
+{
+  "completed_at": "2026-10-30T22:16:59.473311+00:00",
+  "features_rebuilt": false,
+  "baseline_test_average_precision": null,
+  "candidate_model": "hist_gradient_boosting",
+  "candidate_validation_average_precision": 0.9865772963965045,
+  "promotion_decision": "approved",
+  "candidate_mlflow_run_id": "2693190d160d4c37bd6dbb72f215e057"
+}

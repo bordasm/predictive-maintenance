@@ -8,6 +8,7 @@ import json
 import platform
 import subprocess
 import tomllib
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -218,6 +219,7 @@ def run_experiments(config_path: str | Path) -> dict[str, Any]:
     feature_fingerprint = _sha256(feature_path)
     git_state = _git_state()
     results: dict[str, Any] = {}
+    candidate_models_dir = artifact_dir / "candidates"
     for model_name, (model, parameters) in model_specs.items():
         report = _evaluate_model(
             model,
@@ -228,10 +230,10 @@ def run_experiments(config_path: str | Path) -> dict[str, Any]:
             features,
             horizon_hours=config["evaluation"]["horizon_hours"],
         )
-        model_path = artifact_dir / f"{model_name}.joblib"
-        joblib.dump(model, model_path)
-
         with mlflow.start_run(run_name=model_name) as run:
+            model_path = candidate_models_dir / run.info.run_id / "model.joblib"
+            model_path.parent.mkdir(parents=True, exist_ok=True)
+            joblib.dump(model, model_path)
             mlflow.set_tags(
                 {
                     "model_role": "baseline" if model_name == "logistic_regression" else "challenger",
@@ -253,6 +255,7 @@ def run_experiments(config_path: str | Path) -> dict[str, Any]:
             mlflow.log_artifact(str(model_path), artifact_path="model")
             mlflow.log_dict(report, "evaluation/metrics.json")
             report["mlflow_run_id"] = run.info.run_id
+            report["model_path"] = str(model_path)
         results[model_name] = report
 
     selection_metric = config["evaluation"]["selection_metric"]
@@ -283,15 +286,24 @@ def run_experiments(config_path: str | Path) -> dict[str, Any]:
     (report_dir / "README.md").write_text(
         _markdown_report(comparison), encoding="utf-8"
     )
-    (artifact_dir / "champion.json").write_text(
+    candidate_manifest_name = config["output"].get(
+        "candidate_manifest", "candidate.json"
+    )
+    (artifact_dir / candidate_manifest_name).write_text(
         json.dumps(
             {
                 "model": champion,
-                "model_path": str(artifact_dir / f"{champion}.joblib"),
+                "model_path": results[champion]["model_path"],
                 "threshold": results[champion]["validation"]["threshold"],
                 "selection_metric": selection_metric,
                 "selection_value": results[champion]["validation"][selection_metric],
                 "mlflow_run_id": results[champion]["mlflow_run_id"],
+                "feature_sha256": feature_fingerprint,
+                "created_at": datetime.now(UTC).isoformat(),
+                "metrics": {
+                    "validation": results[champion]["validation"],
+                    "test": results[champion]["test"],
+                },
             },
             indent=2,
         ),

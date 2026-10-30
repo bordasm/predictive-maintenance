@@ -33,8 +33,10 @@ class ModelService:
         manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
         configured_value = str(manifest["model_path"])
         configured_path = Path(configured_value)
+        windows_parts = PureWindowsPath(configured_value).parts
         candidates = (
             configured_path,
+            manifest_file.parent.joinpath(*windows_parts),
             manifest_file.parent / configured_path.name,
             manifest_file.parent / PureWindowsPath(configured_value).name,
         )

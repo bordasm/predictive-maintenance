@@ -34,8 +34,8 @@ The experiment pipeline:
 4. selects each decision threshold on validation data;
 5. logs parameters, validation/test metrics, model files, data fingerprints, and
    run IDs to a local MLflow experiment;
-6. selects the champion by validation PR-AUC and writes a comparison report and
-   champion manifest.
+6. selects the best candidate by validation PR-AUC and writes a comparison report
+   and candidate manifest without changing the production champion.
 
 The held-out test result is reported only after model selection.
 
@@ -75,6 +75,26 @@ The monitoring and feedback loop:
 Critical drift starts a review; this pipeline deliberately does not retrain or
 promote a model automatically. See the [stable report](reports/monitoring/stable/README.md)
 and the [injected-drift report](reports/monitoring/drifted/README.md).
+
+## Fifth milestone
+
+The governed retraining and release workflow:
+
+1. orchestrates optional feature rebuilding, model retraining, MLflow tracking,
+   and candidate evaluation from one lifecycle command;
+2. stores every trained candidate under its MLflow run ID, so retraining cannot
+   overwrite the model currently used by the API;
+3. compares the candidate with the incumbent and enforces six relative and
+   absolute performance gates;
+4. keeps promotion explicit even when every gate passes;
+5. creates immutable release directories and atomically updates the champion
+   manifest, with a rollback command for any earlier release;
+6. runs the synthetic end-to-end test suite in GitHub Actions using the locked
+   Python environment and read-only repository permissions.
+
+The latest real-data candidate passed all six gates. See the
+[promotion decision](reports/promotion/README.md) and its
+[machine-readable form](reports/promotion/decision.json).
 
 ## Data
 
@@ -159,6 +179,21 @@ report. Recreate both checked-in monitoring demonstrations with:
 uv run python scripts/generate_monitoring_demo.py
 ```
 
+Run retraining and evaluate the resulting candidate without deploying it:
+
+```powershell
+uv run python -m predictive_maintenance.lifecycle
+```
+
+Add `--rebuild-features` when the raw source tables changed. Promotion and
+rollback are deliberate, separate operations:
+
+```powershell
+uv run python -m predictive_maintenance.promotion evaluate
+uv run python -m predictive_maintenance.promotion promote
+uv run python -m predictive_maintenance.promotion rollback <release-id>
+```
+
 The versioned endpoints are:
 
 ```text
@@ -186,10 +221,15 @@ artifacts/baseline/split_manifest.json
 reports/baseline/metrics.json
 reports/baseline/README.md
 artifacts/experiments/champion.json
-artifacts/experiments/hist_gradient_boosting.joblib
-artifacts/experiments/logistic_regression.joblib
+artifacts/experiments/candidate.json
+artifacts/experiments/candidates/<mlflow-run-id>/model.joblib
+artifacts/experiments/releases/<release-id>/model.joblib
+artifacts/experiments/releases/<release-id>/manifest.json
 reports/model_comparison/comparison.json
 reports/model_comparison/README.md
+reports/promotion/decision.json
+reports/promotion/README.md
+reports/lifecycle/latest.json
 artifacts/monitoring/reference.json
 monitoring/predictions.db
 reports/monitoring/stable/monitoring.json
