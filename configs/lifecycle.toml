@@ -3,5 +3,8 @@ baseline_config = "configs/baseline.toml"
 experiment_config = "configs/experiments.toml"
 promotion_config = "configs/promotion.toml"
 
+[automation]
+incumbent_seed_path = "configs/incumbent_seed.json"
+
 [output]
 summary_path = "reports/lifecycle/latest.json"

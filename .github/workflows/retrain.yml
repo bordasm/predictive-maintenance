@@ -1,0 +1,167 @@
+name: Retrain and promote
+
+on:
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      promote:
+        description: Promote the candidate if every gate passes
+        required: true
+        type: boolean
+        default: false
+  repository_dispatch:
+    types: [training-data-updated]
+
+concurrency:
+  group: model-lifecycle
+  cancel-in-progress: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  retrain:
+    name: Train and evaluate candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    outputs:
+      decision: ${{ steps.result.outputs.decision }}
+      promote: ${{ steps.mode.outputs.promote }}
+      run_id: ${{ steps.result.outputs.run_id }}
+    env:
+      PREDMAINT_DATA_URL: ${{ secrets.PREDMAINT_DATA_URL }}
+      PREDMAINT_DATA_SHA256: ${{ vars.PREDMAINT_DATA_SHA256 }}
+      SCHEDULED_AUTO_PROMOTE: ${{ vars.PREDMAINT_AUTO_PROMOTE }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.6"
+          python-version: "3.14.10"
+          enable-cache: true
+
+      - name: Resolve promotion mode
+        id: mode
+        env:
+          MANUAL_PROMOTE: ${{ inputs.promote }}
+        run: |
+          requested="false"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$MANUAL_PROMOTE" == "true" ]]; then
+            requested="true"
+          elif [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" && "$SCHEDULED_AUTO_PROMOTE" == "true" ]]; then
+            requested="true"
+          fi
+          echo "promote=$requested" >> "$GITHUB_OUTPUT"
+
+      - name: Find latest production model bundle
+        id: production
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          artifact_id="$(gh api "/repos/$GITHUB_REPOSITORY/actions/artifacts?name=production-model&per_page=100" --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | reverse | .[0].id // empty')"
+          echo "artifact_id=$artifact_id" >> "$GITHUB_OUTPUT"
+
+      - name: Restore current production model
+        if: steps.production.outputs.artifact_id != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ steps.production.outputs.artifact_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          path: .
+
+      - name: Validate data-source configuration
+        run: |
+          test -n "$PREDMAINT_DATA_URL" || { echo "Missing PREDMAINT_DATA_URL repository secret"; exit 1; }
+          test -n "$PREDMAINT_DATA_SHA256" || { echo "Missing PREDMAINT_DATA_SHA256 repository variable"; exit 1; }
+
+      - name: Verify lock file and install training environment
+        run: |
+          uv lock --check
+          uv sync --frozen --group dev --no-install-package torch
+
+      - name: Download verified training data
+        run: uv run --no-sync python -m predictive_maintenance.data.download
+
+      - name: Rebuild features, retrain, and evaluate promotion gates
+        run: uv run --no-sync python -m predictive_maintenance.lifecycle --rebuild-features
+
+      - name: Export lifecycle result
+        id: result
+        run: |
+          uv run --no-sync python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          summary = json.loads(Path("reports/lifecycle/latest.json").read_text())
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as output:
+              output.write(f"decision={summary['promotion_decision']}\n")
+              output.write(f"run_id={summary['candidate_mlflow_run_id']}\n")
+          PY
+
+      - name: Upload candidate and audit evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: candidate-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            artifacts/experiments/candidate.json
+            artifacts/experiments/champion.json
+            artifacts/experiments/candidates/
+            artifacts/experiments/releases/
+            reports/baseline/
+            reports/model_comparison/
+            reports/promotion/
+            reports/lifecycle/
+
+  promote:
+    name: Package approved production release
+    needs: retrain
+    if: needs.retrain.outputs.decision == 'approved' && needs.retrain.outputs.promote == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: model-production
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.6"
+          python-version: "3.14.10"
+          enable-cache: true
+
+      - name: Download approved candidate
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: candidate-${{ github.run_id }}
+          path: .
+
+      - name: Install lifecycle environment
+        run: uv sync --frozen --no-install-package torch
+
+      - name: Promote through the same gates
+        run: >-
+          uv run --no-sync python -m predictive_maintenance.promotion
+          promote --release-id "gha-${{ github.run_id }}-${{ needs.retrain.outputs.run_id }}"
+
+      - name: Upload immutable production model bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-model
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            artifacts/experiments/champion.json
+            artifacts/experiments/releases/
+            reports/promotion/

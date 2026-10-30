@@ -134,6 +134,29 @@ The secure deployment layer:
 See the [security report](reports/security/README.md) and the
 [Kubernetes deployment contract](deploy/kubernetes/README.md).
 
+## Eighth milestone
+
+The automated delivery and model-lifecycle layer completes the original CI/CD
+and retraining scope:
+
+1. builds and inspects the serving image after the test job on every push and
+   pull request;
+2. publishes immutable `sha-<commit>` and moving `latest` image tags to GitHub
+   Container Registry after a successful main-branch build;
+3. runs retraining weekly, on demand, or after a `training-data-updated`
+   repository event;
+4. downloads a configured raw-data ZIP, verifies its mandatory SHA-256 digest,
+   rejects unsafe archive members, and rebuilds features before training;
+5. uploads the candidate, reports, and gate decision as auditable workflow
+   artifacts even when the candidate is rejected;
+6. promotes only an approved candidate, through a separately protectable
+   `model-production` GitHub Environment, and packages an immutable production
+   bundle without overwriting the running service.
+
+See the [automation runbook](reports/automation/README.md). Promotion creates a
+deployable model bundle; connecting that bundle to a particular cloud model
+registry or object store remains an environment-specific deployment step.
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -239,6 +262,26 @@ uv run python -m predictive_maintenance.promotion promote
 uv run python -m predictive_maintenance.promotion rollback <release-id>
 ```
 
+The clean-clone lifecycle seeds its first incumbent comparison from
+`configs/incumbent_seed.json`. If a production `champion.json` already exists,
+the lifecycle keeps it and never replaces it with the seed. Hosted runs restore
+the latest non-expired `production-model` artifact before training, then fall
+back to the seed only when no production bundle is available.
+
+To enable the hosted retraining workflow, configure these repository settings:
+
+```text
+Secret:   PREDMAINT_DATA_URL       direct HTTPS URL of the raw-data ZIP
+Variable: PREDMAINT_DATA_SHA256    lowercase SHA-256 of that ZIP
+Variable: PREDMAINT_AUTO_PROMOTE   true only if scheduled/event promotion is wanted
+Environment: model-production      add required reviewers for a human release gate
+```
+
+The ZIP may contain a parent directory, but it must contain each of the five
+Azure PdM CSV files exactly once. Manual runs expose a separate `promote`
+checkbox. A `training-data-updated` repository dispatch provides the event-driven
+trigger and uses the same configured secret and checksum.
+
 The versioned endpoints are:
 
 ```text
@@ -253,6 +296,9 @@ Build and run the container after Docker with the Compose plugin is available:
 ```powershell
 docker compose up --build
 ```
+
+Successful main-branch CI runs also publish the image as
+`ghcr.io/bordasm/predictive-maintenance:sha-<commit>` and `:latest`.
 
 Compose mounts `artifacts/experiments/` read-only at `/models`, so the trained
 model stays outside the image and can be replaced independently. Prometheus is
@@ -298,6 +344,7 @@ observability/grafana/dashboards/service-overview.json
 deploy/kubernetes/base/deployment.yaml
 deploy/kubernetes/base/service.yaml
 reports/security/README.md
+reports/automation/README.md
 mlflow.db
 mlruns/
 ```

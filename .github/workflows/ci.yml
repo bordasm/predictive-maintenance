@@ -35,3 +35,36 @@ jobs:
 
       - name: Check whitespace errors
         run: git diff --check
+
+  container:
+    name: Build and verify serving image
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build image
+        run: docker build --tag predmaint-api:ci .
+
+      - name: Verify installed application and image contract
+        run: |
+          docker run --rm --entrypoint python predmaint-api:ci -c "import predictive_maintenance.serving.app"
+          test "$(docker image inspect predmaint-api:ci --format '{{.Config.User}}')" = "appuser"
+          test "$(docker image inspect predmaint-api:ci --format '{{json .Config.Healthcheck.Test}}')" != "null"
+
+      - name: Publish immutable and latest tags to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          docker tag predmaint-api:ci "$image:sha-$GITHUB_SHA"
+          docker tag predmaint-api:ci "$image:latest"
+          docker push "$image:sha-$GITHUB_SHA"
+          docker push "$image:latest"
