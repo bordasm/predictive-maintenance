@@ -1,0 +1,405 @@
+{
+  "created_at": "2026-10-30T23:32:44.044650+00:00",
+  "experiment_name": "azure-pdm-sequence-challengers",
+  "task": "failure_within_24_hours",
+  "window_size": 48,
+  "window_semantics": "current observation plus strictly preceding hourly observations",
+  "selection_partition": "validation",
+  "selection_metric": "average_precision",
+  "sequence_champion": "transformer",
+  "overall_champion": "hist_gradient_boosting_incumbent",
+  "sequence_champion_outperformed_incumbent": false,
+  "device": "cuda",
+  "runtime": {
+    "python": "3.14.10",
+    "pytorch": "2.14.1+cu126",
+    "scikit_learn": "1.9.1",
+    "cuda_available": true,
+    "cuda_device": "NVIDIA RTX A2000 Laptop GPU"
+  },
+  "feature_path": "data\\processed\\azure_pdm_features.parquet",
+  "feature_sha256": "1e4ef465ec01186af164013063365182de38b1c9520c9eacb111409e2947189e",
+  "rows": {
+    "train": 613270,
+    "validation": 131415,
+    "test": 131415
+  },
+  "windows": {
+    "train_sampled": 111070,
+    "validation": 130710,
+    "test": 130710
+  },
+  "preprocessing": {
+    "numerical_columns": [
+      "volt",
+      "rotate",
+      "pressure",
+      "vibration",
+      "volt_mean_3h",
+      "volt_std_3h",
+      "rotate_mean_3h",
+      "rotate_std_3h",
+      "pressure_mean_3h",
+      "pressure_std_3h",
+      "vibration_mean_3h",
+      "vibration_std_3h",
+      "volt_mean_24h",
+      "volt_std_24h",
+      "rotate_mean_24h",
+      "rotate_std_24h",
+      "pressure_mean_24h",
+      "pressure_std_24h",
+      "vibration_mean_24h",
+      "vibration_std_24h",
+      "error1_count_24h",
+      "error2_count_24h",
+      "error3_count_24h",
+      "error4_count_24h",
+      "error5_count_24h",
+      "days_since_comp1_maintenance",
+      "days_since_comp2_maintenance",
+      "days_since_comp3_maintenance",
+      "days_since_comp4_maintenance",
+      "age"
+    ],
+    "categorical_column": "model",
+    "categories": [
+      "model1",
+      "model2",
+      "model3",
+      "model4"
+    ],
+    "mean": [
+      170.75655524151105,
+      446.6735336657906,
+      100.86528208423967,
+      40.37749007644408,
+      170.7563989103712,
+      10.86148696661247,
+      446.6732505804626,
+      36.299943951778545,
+      100.86545275797405,
+      7.2558159387857275,
+      40.37740992851191,
+      3.62502606165915,
+      170.75687489740264,
+      14.596265561281829,
+      446.670476794238,
+      48.874818888729926,
+      100.86669802627151,
+      9.83589535164347,
+      40.37681144752223,
+      4.8931382996327635,
+      0.028176822606682212,
+      0.026614704779297862,
+      0.021801164250656316,
+      0.02066300324490029,
+      0.00954881210559786,
+      54.704671678056734,
+      51.29285469695563,
+      53.2889820144501,
+      53.62275017529284,
+      10.785714285714286
+    ],
+    "scale": [
+      15.489872050482221,
+      52.668976641385136,
+      11.053003189067045,
+      5.359075604161542,
+      9.46310436806342,
+      5.692796459721067,
+      33.121462083508945,
+      18.952981439118563,
+      7.42190124258452,
+      3.800601700308693,
+      3.4616778997668853,
+      1.896275115587475,
+      4.683285013809792,
+      2.2191335500126956,
+      18.114088499978294,
+      7.55109855339464,
+      4.7595796768321925,
+      1.6745248689715162,
+      2.041350159240646,
+      0.7837196744762965,
+      0.1668711496093459,
+      0.16228629487137058,
+      0.1479308614479395,
+      0.14370183278048057,
+      0.09800197231372261,
+      65.32785122310628,
+      56.8705744665127,
+      59.445164711230824,
+      58.233655396717594,
+      5.954333013247837
+    ],
+    "output_features": [
+      "volt",
+      "rotate",
+      "pressure",
+      "vibration",
+      "volt_mean_3h",
+      "volt_std_3h",
+      "rotate_mean_3h",
+      "rotate_std_3h",
+      "pressure_mean_3h",
+      "pressure_std_3h",
+      "vibration_mean_3h",
+      "vibration_std_3h",
+      "volt_mean_24h",
+      "volt_std_24h",
+      "rotate_mean_24h",
+      "rotate_std_24h",
+      "pressure_mean_24h",
+      "pressure_std_24h",
+      "vibration_mean_24h",
+      "vibration_std_24h",
+      "error1_count_24h",
+      "error2_count_24h",
+      "error3_count_24h",
+      "error4_count_24h",
+      "error5_count_24h",
+      "days_since_comp1_maintenance",
+      "days_since_comp2_maintenance",
+      "days_since_comp3_maintenance",
+      "days_since_comp4_maintenance",
+      "age",
+      "model=model1",
+      "model=model2",
+      "model=model3",
+      "model=model4"
+    ]
+  },
+  "models": {
+    "lstm": {
+      "validation": {
+        "rows": 130710,
+        "positive_rows": 2688,
+        "positive_rate": 0.020564608675694283,
+        "threshold": 0.9447393417358398,
+        "average_precision": 0.9863612130380613,
+        "roc_auc": 0.9997561657696854,
+        "precision": 0.936373276776246,
+        "recall": 0.9854910714285714,
+        "f1": 0.9603045133224578,
+        "false_positive_rows_per_machine_day": 0.03296703296703297,
+        "false_positive_rows_per_machine_week": 0.23076923076923078,
+        "confusion_matrix": {
+          "tn": 127842,
+          "fp": 180,
+          "fn": 39,
+          "tp": 2649
+        },
+        "failure_events": {
+          "eligible_failure_events": 118,
+          "detected_failure_events": 118,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "test": {
+        "rows": 130710,
+        "positive_rows": 2856,
+        "positive_rate": 0.021849896717925178,
+        "threshold": 0.9447393417358398,
+        "average_precision": 0.9825966891301738,
+        "roc_auc": 0.9996544155932587,
+        "precision": 0.9157062891010866,
+        "recall": 0.9737394957983193,
+        "f1": 0.9438316646869167,
+        "false_positive_rows_per_machine_day": 0.046886446886446886,
+        "false_positive_rows_per_machine_week": 0.3282051282051282,
+        "confusion_matrix": {
+          "tn": 127598,
+          "fp": 256,
+          "fn": 75,
+          "tp": 2781
+        },
+        "failure_events": {
+          "eligible_failure_events": 126,
+          "detected_failure_events": 126,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "training": {
+        "best_epoch": 2,
+        "epochs_completed": 4,
+        "best_validation_average_precision": 0.9990246385027902,
+        "duration_seconds": 17.35738930000025,
+        "parameter_count": 25793,
+        "history": [
+          {
+            "epoch": 1.0,
+            "train_loss": 0.1059160829629463,
+            "validation_average_precision": 0.9988485387311317
+          },
+          {
+            "epoch": 2.0,
+            "train_loss": 0.009476491443355361,
+            "validation_average_precision": 0.9990246385027902
+          },
+          {
+            "epoch": 3.0,
+            "train_loss": 0.005422298379482315,
+            "validation_average_precision": 0.9987435054884249
+          },
+          {
+            "epoch": 4.0,
+            "train_loss": 0.004094804860208765,
+            "validation_average_precision": 0.9986579511419259
+          }
+        ]
+      },
+      "mlflow_run_id": "c0d43949fe4b435ca5948ebd42d139c9",
+      "model_path": "artifacts\\sequence\\candidates\\c0d43949fe4b435ca5948ebd42d139c9\\model.pt"
+    },
+    "transformer": {
+      "validation": {
+        "rows": 130710,
+        "positive_rows": 2688,
+        "positive_rate": 0.020564608675694283,
+        "threshold": 0.37763476371765137,
+        "average_precision": 0.9971003990892193,
+        "roc_auc": 0.9999406506047881,
+        "precision": 0.9762962962962963,
+        "recall": 0.9806547619047619,
+        "f1": 0.9784706755753526,
+        "false_positive_rows_per_machine_day": 0.011721611721611722,
+        "false_positive_rows_per_machine_week": 0.08205128205128205,
+        "confusion_matrix": {
+          "tn": 127958,
+          "fp": 64,
+          "fn": 52,
+          "tp": 2636
+        },
+        "failure_events": {
+          "eligible_failure_events": 118,
+          "detected_failure_events": 118,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "test": {
+        "rows": 130710,
+        "positive_rows": 2856,
+        "positive_rate": 0.021849896717925178,
+        "threshold": 0.37763476371765137,
+        "average_precision": 0.9939275480825271,
+        "roc_auc": 0.999872810160872,
+        "precision": 0.9583190980526136,
+        "recall": 0.9821428571428571,
+        "f1": 0.9700847311084212,
+        "false_positive_rows_per_machine_day": 0.022344322344322345,
+        "false_positive_rows_per_machine_week": 0.1564102564102564,
+        "confusion_matrix": {
+          "tn": 127732,
+          "fp": 122,
+          "fn": 51,
+          "tp": 2805
+        },
+        "failure_events": {
+          "eligible_failure_events": 126,
+          "detected_failure_events": 126,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "training": {
+        "best_epoch": 6,
+        "epochs_completed": 6,
+        "best_validation_average_precision": 0.9989831706121889,
+        "duration_seconds": 38.74809170000026,
+        "parameter_count": 42049,
+        "history": [
+          {
+            "epoch": 1.0,
+            "train_loss": 0.07567703902628835,
+            "validation_average_precision": 0.9961796438881484
+          },
+          {
+            "epoch": 2.0,
+            "train_loss": 0.012724240200944226,
+            "validation_average_precision": 0.9986023951605971
+          },
+          {
+            "epoch": 3.0,
+            "train_loss": 0.008966817029801224,
+            "validation_average_precision": 0.9984312458095188
+          },
+          {
+            "epoch": 4.0,
+            "train_loss": 0.005921515824607455,
+            "validation_average_precision": 0.9987655115595881
+          },
+          {
+            "epoch": 5.0,
+            "train_loss": 0.0060273016787014124,
+            "validation_average_precision": 0.9986848443688238
+          },
+          {
+            "epoch": 6.0,
+            "train_loss": 0.005349325956523511,
+            "validation_average_precision": 0.9989831706121889
+          }
+        ]
+      },
+      "mlflow_run_id": "8a0a264f88984adc92b6c1f965dfbc1d",
+      "model_path": "artifacts\\sequence\\candidates\\8a0a264f88984adc92b6c1f965dfbc1d\\model.pt"
+    },
+    "hist_gradient_boosting_incumbent": {
+      "validation": {
+        "rows": 130710,
+        "positive_rows": 2688,
+        "positive_rate": 0.020564608675694283,
+        "threshold": 0.7256716588943359,
+        "average_precision": 0.9998540492141567,
+        "roc_auc": 0.9999969749200472,
+        "precision": 0.9940828402366864,
+        "recall": 1.0,
+        "f1": 0.9970326409495549,
+        "false_positive_rows_per_machine_day": 0.0029304029304029304,
+        "false_positive_rows_per_machine_week": 0.020512820512820513,
+        "confusion_matrix": {
+          "tn": 128006,
+          "fp": 16,
+          "fn": 0,
+          "tp": 2688
+        },
+        "failure_events": {
+          "eligible_failure_events": 118,
+          "detected_failure_events": 118,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "test": {
+        "rows": 130710,
+        "positive_rows": 2856,
+        "positive_rate": 0.021849896717925178,
+        "threshold": 0.7256716588943359,
+        "average_precision": 0.9999350515738035,
+        "roc_auc": 0.9999986443965169,
+        "precision": 0.9986013986013986,
+        "recall": 1.0,
+        "f1": 0.9993002099370188,
+        "false_positive_rows_per_machine_day": 0.0007326007326007326,
+        "false_positive_rows_per_machine_week": 0.005128205128205128,
+        "confusion_matrix": {
+          "tn": 127850,
+          "fp": 4,
+          "fn": 0,
+          "tp": 2856
+        },
+        "failure_events": {
+          "eligible_failure_events": 126,
+          "detected_failure_events": 126,
+          "event_recall": 1.0,
+          "median_lead_time_hours": 24.0
+        }
+      },
+      "mlflow_run_id": "97293e9d3f3a456998d7785bc1ac9f72",
+      "model_path": "artifacts/experiments/hist_gradient_boosting.joblib"
+    }
+  }
+}

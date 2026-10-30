@@ -157,6 +157,27 @@ See the [automation runbook](reports/automation/README.md). Promotion creates a
 deployable model bundle; connecting that bundle to a particular cloud model
 registry or object store remains an environment-specific deployment step.
 
+## Ninth milestone
+
+The temporal deep-learning challenger pipeline:
+
+1. constructs fixed 48-hour trailing windows that never cross machine or time-gap
+   boundaries and uses only the current and preceding observations;
+2. fits numeric scaling and machine-model category encoding on training machines
+   only, preserving the machine-disjoint train/validation/test split;
+3. keeps every positive training window while striding negative windows to make
+   rare-event training efficient without changing full-resolution evaluation;
+4. trains a compact LSTM and Transformer with weighted binary cross-entropy,
+   early stopping on validation PR-AUC, gradient clipping, and reproducible seeds;
+5. records model checkpoints, preprocessing state, training history, metrics,
+   runtime, data fingerprint, and run IDs in a separate MLflow experiment;
+6. compares both challengers with the deployed gradient-boosting incumbent on
+   exactly the same eligible window endpoints.
+
+The Transformer won the neural comparison, while the simpler deployed incumbent
+remained the overall validation champion. See the [sequence comparison](reports/sequence_comparison/README.md)
+and [machine-readable results](reports/sequence_comparison/comparison.json).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -203,6 +224,16 @@ Run the tracked baseline/challenger comparison:
 ```powershell
 uv run python -m predictive_maintenance.experiments --config configs/experiments.toml
 ```
+
+Train and compare the GPU-aware LSTM and Transformer sequence challengers:
+
+```powershell
+uv run python -m predictive_maintenance.sequence_experiments --config configs/sequence.toml
+```
+
+`device = "auto"` selects CUDA when available and otherwise uses the CPU. Neural
+checkpoints can be reconstructed with `load_sequence_checkpoint`; their saved
+preprocessor metadata defines the exact input ordering and scaling.
 
 Open the local MLflow UI after at least one experiment run:
 
@@ -326,6 +357,8 @@ artifacts/experiments/candidate.json
 artifacts/experiments/candidates/<mlflow-run-id>/model.joblib
 artifacts/experiments/releases/<release-id>/model.joblib
 artifacts/experiments/releases/<release-id>/manifest.json
+artifacts/sequence/candidate.json
+artifacts/sequence/candidates/<mlflow-run-id>/model.pt
 reports/model_comparison/comparison.json
 reports/model_comparison/README.md
 reports/promotion/decision.json
@@ -345,6 +378,8 @@ deploy/kubernetes/base/deployment.yaml
 deploy/kubernetes/base/service.yaml
 reports/security/README.md
 reports/automation/README.md
+reports/sequence_comparison/comparison.json
+reports/sequence_comparison/README.md
 mlflow.db
 mlruns/
 ```
@@ -377,3 +412,17 @@ events**. See the [comparison report](reports/model_comparison/README.md) and
 The near-perfect challenger score reflects the strong, synthetic patterns in this
 sample dataset. It is useful for verifying the MLOps workflow, but it is not a
 credible production-performance estimate for another machine fleet.
+
+## Sequence challenger result
+
+On full-resolution 48-hour windows, the LSTM reached **0.9864 validation PR-AUC**
+and **0.9826 test PR-AUC**. The Transformer improved this to **0.9971 validation
+PR-AUC** and **0.9939 test PR-AUC**, with **0.9583 test precision**, **0.9821 test
+recall**, and all 126 eligible test failure events detected. The incumbent still
+led with **0.9999 validation PR-AUC** on the same endpoints, so it correctly
+remained champion.
+
+The neural candidate is not fed into the current promotion workflow because its
+48-hour sequence contract differs from the API's independent-row contract. This
+decision is recorded in `artifacts/sequence/candidate.json`; serving it would
+require a stateful online window builder and a versioned sequence endpoint.
