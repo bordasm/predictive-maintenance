@@ -9,11 +9,17 @@ from pathlib import Path
 from time import perf_counter
 
 from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from predictive_maintenance.monitoring.store import (
     DuplicateObservationError,
     PredictionRecord,
     PredictionStore,
+)
+from predictive_maintenance.observability.metrics import (
+    ServiceMetrics,
+    normalize_http_path,
 )
 from predictive_maintenance.serving.model_service import ModelService
 from predictive_maintenance.serving.schemas import (
@@ -41,6 +47,7 @@ def create_app(
         prediction_database
         or os.environ.get("PREDMAINT_PREDICTION_DB", DEFAULT_PREDICTION_DATABASE)
     )
+    metrics = ServiceMetrics()
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
@@ -48,14 +55,46 @@ def create_app(
         store = PredictionStore(configured_database)
         store.initialize()
         application.state.prediction_store = store
+        metrics.set_ready(
+            model=application.state.model_service.model_name,
+            version=application.state.model_service.model_version,
+            mlflow_run_id=application.state.model_service.mlflow_run_id,
+        )
         yield
+        metrics.readiness.set(0)
 
     application = FastAPI(
         title="Predictive Maintenance Inference API",
         description="Predict any component failure within the next 24 hours.",
-        version="1.1.0",
+        version="1.2.0",
         lifespan=lifespan,
     )
+
+    @application.middleware("http")
+    async def observe_http(request: Request, call_next):
+        if request.url.path == "/metrics":
+            return await call_next(request)
+        started_at = perf_counter()
+        response_status = 500
+        try:
+            response = await call_next(request)
+            response_status = response.status_code
+            return response
+        finally:
+            metric_path = normalize_http_path(request.url.path)
+            metrics.http_requests.labels(
+                request.method, metric_path, str(response_status)
+            ).inc()
+            metrics.http_duration.labels(
+                request.method, metric_path
+            ).observe(perf_counter() - started_at)
+
+    @application.get("/metrics", include_in_schema=False)
+    def prometheus_metrics() -> Response:
+        return Response(
+            content=generate_latest(metrics.registry),
+            media_type=CONTENT_TYPE_LATEST,
+        )
 
     @application.get("/health", response_model=HealthResponse, tags=["operations"])
     def health(request: Request) -> HealthResponse:
@@ -87,7 +126,12 @@ def create_app(
         store: PredictionStore = request.app.state.prediction_store
         started_at = perf_counter()
         scores = service.predict([item.features for item in payload.observations])
-        latency_ms = (perf_counter() - started_at) * 1000
+        inference_seconds = perf_counter() - started_at
+        latency_ms = inference_seconds * 1000
+        metrics.observe_predictions(
+            inference_seconds=inference_seconds,
+            alerts=[score[1] for score in scores],
+        )
         records = [
             PredictionRecord(
                 observation=observation, probability=score[0], alert=score[1]

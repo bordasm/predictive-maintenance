@@ -1,0 +1,17 @@
+{
+  "requests": 200,
+  "successful_requests": 200,
+  "error_rate": 0.0,
+  "throughput_requests_per_second": 31.697571693408655,
+  "latency_ms": {
+    "minimum": 32.383499999923515,
+    "p50": 147.11379999994278,
+    "p95": 273.2348899999348,
+    "p99": 2735.3178769999927,
+    "maximum": 2799.7433000000456
+  },
+  "status_counts": {
+    "200": 200
+  },
+  "errors": []
+}

@@ -96,6 +96,24 @@ The latest real-data candidate passed all six gates. See the
 [promotion decision](reports/promotion/README.md) and its
 [machine-readable form](reports/promotion/decision.json).
 
+## Sixth milestone
+
+The service-observability layer:
+
+1. instruments the API with Prometheus counters, gauges, and latency/batch-size
+   histograms using bounded-cardinality labels;
+2. exposes readiness, loaded-model identity, HTTP outcomes, inference latency,
+   prediction volume, and alert decisions at `GET /metrics`;
+3. adds explicit availability, 5xx-rate, p95-latency, and readiness objectives;
+4. provisions Prometheus alert rules and a Grafana service dashboard through
+   Compose without manual UI configuration;
+5. includes a concurrent HTTP load-test tool with JSON and Markdown reports;
+6. documents the measured tail-latency limitation of local SQLite persistence.
+
+The local 200-request test completed with **0% errors**, **31.70 requests/s**, and
+**273.23 ms p95 latency**. See the [observability report](reports/observability/README.md)
+and [load-test result](reports/observability/LOAD_TEST.md).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -200,6 +218,7 @@ The versioned endpoints are:
 GET  /health
 GET  /v1/model-info
 POST /v1/predict
+GET  /metrics
 ```
 
 Build and run the container after Docker with the Compose plugin is available:
@@ -209,7 +228,14 @@ docker compose up --build
 ```
 
 Compose mounts `artifacts/experiments/` read-only at `/models`, so the trained
-model stays outside the image and can be replaced independently.
+model stays outside the image and can be replaced independently. Prometheus is
+available on port 9090 and the provisioned Grafana dashboard on port 3000.
+
+With the API running, reproduce the bounded load test with:
+
+```powershell
+uv run python scripts/load_test_api.py --requests 200 --concurrency 8
+```
 
 Generated outputs:
 
@@ -236,6 +262,10 @@ reports/monitoring/stable/monitoring.json
 reports/monitoring/stable/README.md
 reports/monitoring/drifted/monitoring.json
 reports/monitoring/drifted/README.md
+reports/observability/load-test.json
+reports/observability/LOAD_TEST.md
+observability/prometheus/alerts.yml
+observability/grafana/dashboards/service-overview.json
 mlflow.db
 mlruns/
 ```

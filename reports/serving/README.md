@@ -8,6 +8,7 @@ MLflow experiment and exposes a versioned inference contract.
 | `GET /health` | Readiness and loaded-model check |
 | `GET /v1/model-info` | Model, threshold, feature count, and MLflow version |
 | `POST /v1/predict` | Validated batch prediction for up to 1,000 observations |
+| `GET /metrics` | Prometheus service, inference, and loaded-model metrics |
 
 Each observation carries a caller-generated `observation_id`, `machine_id`, and
 `observed_at` timestamp. Successful predictions are stored in SQLite with the
@@ -32,6 +33,12 @@ The API loads the model once during application lifespan startup. Invalid featur
 ranges and unknown request fields produce HTTP 422 responses before inference.
 The automated test suite covers successful loading, durable prediction logging,
 duplicate-ID rejection, and an invalid negative rolling standard deviation.
+
+Prometheus instrumentation uses a registry scoped to each application instance,
+which keeps integration tests isolated. Machine and observation IDs are excluded
+from metric labels. The Compose stack provisions scrape configuration, four SLO
+alert rules, and the Grafana service dashboard; details and measured local load
+results are in the [observability report](../observability/README.md).
 
 The Docker and Compose definitions are included, but the local Docker daemon was
 not available during verification. The native Uvicorn service and its complete

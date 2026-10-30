@@ -80,6 +80,8 @@ def test_inference_api_loads_champion_and_validates_requests(
         duplicate = client.post(
             "/v1/predict", json={"observations": [request_observation]}
         )
+        unknown = client.get("/arbitrary/machine-123")
+        metrics = client.get("/metrics")
 
     assert health.status_code == 200
     assert health.json() == {
@@ -95,6 +97,15 @@ def test_inference_api_loads_champion_and_validates_requests(
     assert 0 <= prediction.json()["predictions"][0]["failure_probability"] <= 1
     assert invalid.status_code == 422
     assert duplicate.status_code == 409
+    assert unknown.status_code == 404
+    assert metrics.status_code == 200
+    assert "predmaint_service_ready 1.0" in metrics.text
+    assert "predmaint_inference_duration_seconds_count 2.0" in metrics.text
+    assert 'path="/v1/predict",status="200"' in metrics.text
+    assert 'path="/v1/predict",status="409"' in metrics.text
+    assert 'path="unmatched",status="404"' in metrics.text
+    assert "/arbitrary/machine-123" not in metrics.text
+    assert "machine-6-20260101T000000Z" not in metrics.text
     with sqlite3.connect(database_path) as connection:
         stored = connection.execute(
             "SELECT observation_id, model_name, features_json FROM prediction_log"
