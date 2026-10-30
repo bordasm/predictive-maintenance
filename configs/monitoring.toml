@@ -1,0 +1,22 @@
+[data]
+feature_path = "data/processed/azure_pdm_features.parquet"
+prediction_database = "monitoring/predictions.db"
+labels_path = "monitoring/labels.csv"
+
+[model]
+manifest_path = "artifacts/experiments/champion.json"
+
+[reference]
+profile_path = "artifacts/monitoring/reference.json"
+sample_rows = 20000
+quantile_bins = 10
+random_seed = 42
+
+[thresholds]
+warning_psi = 0.10
+critical_psi = 0.20
+warning_categorical_distance = 0.10
+critical_categorical_distance = 0.20
+
+[output]
+report_dir = "reports/monitoring/current"

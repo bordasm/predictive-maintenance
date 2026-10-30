@@ -11,7 +11,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from predictive_maintenance.serving.schemas import FeatureVector, Prediction
+from predictive_maintenance.serving.schemas import FeatureVector
 
 
 @dataclass(frozen=True)
@@ -59,7 +59,7 @@ class ModelService:
             feature_names=feature_names,
         )
 
-    def predict(self, observations: list[FeatureVector]) -> list[Prediction]:
+    def predict(self, observations: list[FeatureVector]) -> list[tuple[float, bool]]:
         frame = pd.DataFrame([item.model_dump() for item in observations])
         missing = sorted(set(self.feature_names).difference(frame.columns))
         if missing:
@@ -69,9 +69,6 @@ class ModelService:
             dtype=float,
         )
         return [
-            Prediction(
-                failure_probability=float(probability),
-                alert=bool(probability >= self.threshold),
-            )
+            (float(probability), bool(probability >= self.threshold))
             for probability in probabilities
         ]

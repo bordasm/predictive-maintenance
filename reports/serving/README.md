@@ -9,6 +9,12 @@ MLflow experiment and exposes a versioned inference contract.
 | `GET /v1/model-info` | Model, threshold, feature count, and MLflow version |
 | `POST /v1/predict` | Validated batch prediction for up to 1,000 observations |
 
+Each observation carries a caller-generated `observation_id`, `machine_id`, and
+`observed_at` timestamp. Successful predictions are stored in SQLite with the
+input features, probability, alert, model/run identity, threshold, and inference
+latency. Reusing an observation ID returns HTTP 409 rather than duplicating the
+monitoring history.
+
 Local smoke testing used the actual champion artifact and the checked-in
 `examples/prediction_request.json`. All three requests returned HTTP 200. The
 service reported:
@@ -24,8 +30,8 @@ sample alert: false
 
 The API loads the model once during application lifespan startup. Invalid feature
 ranges and unknown request fields produce HTTP 422 responses before inference.
-The automated test suite covers successful loading and prediction as well as an
-invalid negative rolling standard deviation.
+The automated test suite covers successful loading, durable prediction logging,
+duplicate-ID rejection, and an invalid negative rolling standard deviation.
 
 The Docker and Compose definitions are included, but the local Docker daemon was
 not available during verification. The native Uvicorn service and its complete

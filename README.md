@@ -57,6 +57,25 @@ telemetry remains an upstream responsibility; this keeps online model serving
 separate from stateful feature computation. See the
 [serving verification report](reports/serving/README.md).
 
+## Fourth milestone
+
+The monitoring and feedback loop:
+
+1. adds traceable observation, machine, and event-time metadata to every request;
+2. logs features, predictions, alerts, model identity, threshold, and latency to
+   SQLite as part of a successful API call;
+3. rejects duplicate observation IDs so retries cannot bias the monitoring data;
+4. profiles the training distribution and calculates numeric PSI, categorical
+   distribution distance, range violations, null rates, and prediction drift;
+5. joins delayed labels by observation ID and reports coverage, PR-AUC,
+   precision, recall, F1, and a confusion matrix;
+6. writes machine-readable JSON and a concise Markdown report, with a reproducible
+   stable-versus-injected-drift demonstration.
+
+Critical drift starts a review; this pipeline deliberately does not retrain or
+promote a model automatically. See the [stable report](reports/monitoring/stable/README.md)
+and the [injected-drift report](reports/monitoring/drifted/README.md).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -125,6 +144,21 @@ Run the checked-in request against all public endpoints:
 uv run python scripts/smoke_api.py
 ```
 
+Build the training reference profile and report on logged API predictions:
+
+```powershell
+uv run python -m predictive_maintenance.monitoring.pipeline build-reference
+uv run python -m predictive_maintenance.monitoring.pipeline report
+```
+
+If outcomes have arrived, save a CSV at `monitoring/labels.csv` with
+`observation_id` and `actual_failure_within_horizon` columns before creating the
+report. Recreate both checked-in monitoring demonstrations with:
+
+```powershell
+uv run python scripts/generate_monitoring_demo.py
+```
+
 The versioned endpoints are:
 
 ```text
@@ -156,6 +190,12 @@ artifacts/experiments/hist_gradient_boosting.joblib
 artifacts/experiments/logistic_regression.joblib
 reports/model_comparison/comparison.json
 reports/model_comparison/README.md
+artifacts/monitoring/reference.json
+monitoring/predictions.db
+reports/monitoring/stable/monitoring.json
+reports/monitoring/stable/README.md
+reports/monitoring/drifted/monitoring.json
+reports/monitoring/drifted/README.md
 mlflow.db
 mlruns/
 ```

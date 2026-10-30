@@ -1,6 +1,10 @@
 {
   "observations": [
     {
+      "observation_id": "machine-42-20150101T060000Z",
+      "machine_id": 42,
+      "observed_at": "2015-01-01T06:00:00Z",
+      "features": {
       "volt": 223.853296420621,
       "rotate": 397.30812673297,
       "pressure": 102.874438112839,
@@ -32,6 +36,7 @@
       "days_since_comp4_maintenance": 34.0,
       "age": 7,
       "model": "model4"
+      }
     }
   ]
 }

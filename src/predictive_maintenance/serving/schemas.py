@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -43,13 +45,27 @@ class FeatureVector(BaseModel):
     model: str = Field(min_length=1, max_length=64)
 
 
+class PredictionObservation(BaseModel):
+    """A traceable observation and the features used for inference."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    observation_id: str = Field(min_length=1, max_length=128)
+    machine_id: int = Field(ge=1)
+    observed_at: datetime
+    features: FeatureVector
+
+
 class PredictionBatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    observations: list[FeatureVector] = Field(min_length=1, max_length=1000)
+    observations: list[PredictionObservation] = Field(min_length=1, max_length=1000)
 
 
 class Prediction(BaseModel):
+    observation_id: str
+    machine_id: int
+    observed_at: datetime
     failure_probability: float = Field(ge=0, le=1)
     alert: bool
 
@@ -64,6 +80,7 @@ class PredictionResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     model: str
+    prediction_logging: bool
 
 
 class ModelInfoResponse(BaseModel):

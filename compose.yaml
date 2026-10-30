@@ -5,4 +5,5 @@ services:
       - "8000:8000"
     volumes:
       - ./artifacts/experiments:/models:ro
+      - ./monitoring:/data
     restart: unless-stopped

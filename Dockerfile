@@ -2,7 +2,8 @@ FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PREDMAINT_CHAMPION_MANIFEST=/models/champion.json
+    PREDMAINT_CHAMPION_MANIFEST=/models/champion.json \
+    PREDMAINT_PREDICTION_DB=/data/predictions.db
 
 WORKDIR /app
 
@@ -13,7 +14,9 @@ COPY pyproject.toml README.md ./
 COPY src ./src
 RUN pip install --no-cache-dir --no-deps .
 
-RUN useradd --create-home --uid 10001 appuser
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir /data \
+    && chown appuser:appuser /data
 USER appuser
 
 EXPOSE 8000

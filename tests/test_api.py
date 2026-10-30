@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 import joblib
@@ -52,26 +53,52 @@ def test_inference_api_loads_champion_and_validates_requests(
         mode="json"
     )
 
-    with TestClient(create_app(manifest_path)) as client:
+    database_path = tmp_path / "predictions.db"
+    request_observation = {
+        "observation_id": "machine-6-20260101T000000Z",
+        "machine_id": 6,
+        "observed_at": "2026-01-01T00:00:00Z",
+        "features": payload,
+    }
+    with TestClient(create_app(manifest_path, database_path)) as client:
         health = client.get("/health")
         info = client.get("/v1/model-info")
         prediction = client.post(
-            "/v1/predict", json={"observations": [payload]}
+            "/v1/predict", json={"observations": [request_observation]}
         )
         invalid_payload = dict(payload)
         invalid_payload["volt_std_3h"] = -1
         invalid = client.post(
-            "/v1/predict", json={"observations": [invalid_payload]}
+            "/v1/predict",
+            json={
+                "observations": [
+                    {**request_observation, "features": invalid_payload}
+                ]
+            },
+        )
+        duplicate = client.post(
+            "/v1/predict", json={"observations": [request_observation]}
         )
 
     assert health.status_code == 200
     assert health.json() == {
         "status": "ready",
         "model": "hist_gradient_boosting",
+        "prediction_logging": True,
     }
     assert info.status_code == 200
     assert info.json()["feature_count"] == len(features)
     assert prediction.status_code == 200
     assert len(prediction.json()["predictions"]) == 1
+    assert prediction.json()["predictions"][0]["observation_id"] == request_observation["observation_id"]
     assert 0 <= prediction.json()["predictions"][0]["failure_probability"] <= 1
     assert invalid.status_code == 422
+    assert duplicate.status_code == 409
+    with sqlite3.connect(database_path) as connection:
+        stored = connection.execute(
+            "SELECT observation_id, model_name, features_json FROM prediction_log"
+        ).fetchall()
+    assert len(stored) == 1
+    assert stored[0][0] == request_observation["observation_id"]
+    assert stored[0][1] == "hist_gradient_boosting"
+    assert json.loads(stored[0][2])["volt"] == payload["volt"]
