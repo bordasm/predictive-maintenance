@@ -9,44 +9,14 @@ import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-
-
-@dataclass(frozen=True)
-class RequestResult:
-    status: int
-    latency_ms: float
-    error: str | None = None
-
-
-def summarize_results(
-    results: list[RequestResult], *, wall_seconds: float
-) -> dict[str, Any]:
-    latencies = np.asarray([item.latency_ms for item in results], dtype=float)
-    successes = sum(item.status == 200 for item in results)
-    return {
-        "requests": len(results),
-        "successful_requests": successes,
-        "error_rate": float(1 - successes / len(results)),
-        "throughput_requests_per_second": float(len(results) / wall_seconds),
-        "latency_ms": {
-            "minimum": float(latencies.min()),
-            "p50": float(np.percentile(latencies, 50)),
-            "p95": float(np.percentile(latencies, 95)),
-            "p99": float(np.percentile(latencies, 99)),
-            "maximum": float(latencies.max()),
-        },
-        "status_counts": {
-            str(status): sum(item.status == status for item in results)
-            for status in sorted({item.status for item in results})
-        },
-        "errors": [asdict(item) for item in results if item.error],
-    }
+from predictive_maintenance.observability.load_test import (
+    RequestResult,
+    summarize_results,
+)
 
 
 def _send_request(

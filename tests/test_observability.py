@@ -6,7 +6,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.load_test_api import RequestResult, summarize_results
+from predictive_maintenance.observability.load_test import (
+    RequestResult,
+    summarize_results,
+)
 
 
 def test_load_test_summary_calculates_slo_signals() -> None:
