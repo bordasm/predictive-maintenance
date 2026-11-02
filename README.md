@@ -8,6 +8,8 @@ candidate models with MLflow.
 The implementation deliberately separates exploratory notebooks from reusable
 code. Older TensorFlow/Keras experiments are kept under `notebooks/legacy`.
 
+This project was created with the help of Codex. The conceptual design was done using GPT-6 Astra, and the rest using GPT-5.6 Sol.
+
 ## First milestone
 
 The baseline pipeline:
