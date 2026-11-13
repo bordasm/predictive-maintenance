@@ -29,6 +29,9 @@ try {
     & terraform apply `
         -target='google_project_service.required' `
         -target='google_artifact_registry_repository.images' `
+        -target='google_project_iam_member.cloud_build_artifact_writer' `
+        -target='google_project_iam_member.cloud_build_compute_storage_reader' `
+        -target='google_project_iam_member.cloud_build_compute_artifact_writer' `
         -var="project_id=$ProjectId" `
         -var="region=$Region" `
         -auto-approve

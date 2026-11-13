@@ -42,6 +42,27 @@ resource "google_project_iam_member" "cloud_build_artifact_writer" {
   ]
 }
 
+# Newer Google Cloud projects run Cloud Build with the Compute Engine default
+# service account. It needs to read the uploaded build context and push images.
+resource "google_project_iam_member" "cloud_build_compute_storage_reader" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${data.google_project.current.number}-compute@developer.gserviceaccount.com"
+  depends_on = [
+    google_project_service.required,
+  ]
+}
+
+resource "google_project_iam_member" "cloud_build_compute_artifact_writer" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${data.google_project.current.number}-compute@developer.gserviceaccount.com"
+  depends_on = [
+    google_project_service.required,
+    google_artifact_registry_repository.images,
+  ]
+}
+
 resource "google_firebase_project" "default" {
   provider   = google-beta
   project    = var.project_id
@@ -158,7 +179,11 @@ resource "google_project_service_identity" "api_gateway" {
 resource "google_service_account_iam_member" "gateway_token_creator" {
   service_account_id = google_service_account.gateway.name
   role               = "roles/iam.serviceAccountTokenCreator"
-  member             = "serviceAccount:${google_project_service_identity.api_gateway.email}"
+  # The google-beta provider can return a null email for the API Gateway
+  # service identity even after creating it. Its documented address is stable.
+  member = "serviceAccount:service-${data.google_project.current.number}@gcp-sa-apigateway.iam.gserviceaccount.com"
+
+  depends_on = [google_project_service_identity.api_gateway]
 }
 
 resource "google_cloud_run_v2_service_iam_member" "gateway_invoker" {
