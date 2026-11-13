@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071525" />
+    <title>RailSense · Predictive Maintenance</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/config.js"></script>
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <div class="ambient"></div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="RailSense home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>RailSense</span>
+      </a>
+      <div class="topbar-meta">
+        <span class="live-dot"></span>
+        <span id="service-status">Secure model workspace</span>
+        <button id="logout-button" class="ghost-button hidden" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="login-view" class="login-shell">
+        <div class="hero-copy">
+          <p class="eyebrow">CONDITION INTELLIGENCE</p>
+          <h1>See the failure<br /><span>before it arrives.</span></h1>
+          <p class="hero-summary">
+            Explore a production-style predictive-maintenance system using a
+            champion model and machine observations held out from training.
+          </p>
+          <div class="hero-stats" aria-label="Demo capabilities">
+            <div><strong>24 h</strong><span>prediction horizon</span></div>
+            <div><strong>31</strong><span>model features</span></div>
+            <div><strong>JWT</strong><span>protected inference</span></div>
+          </div>
+        </div>
+
+        <form id="login-form" class="login-card">
+          <div class="card-kicker">RESTRICTED DEMO</div>
+          <h2>Enter the control room</h2>
+          <p>Use an account provisioned by the project administrator.</p>
+          <label>
+            <span>Email</span>
+            <input id="email" type="email" autocomplete="username" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input id="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button id="login-button" class="primary-button" type="submit">
+            Authenticate
+            <span aria-hidden="true">→</span>
+          </button>
+          <p id="login-error" class="error-message" role="alert"></p>
+          <div class="security-note">
+            <span aria-hidden="true">◆</span>
+            Credentials are verified by Google Identity Platform.
+          </div>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="dashboard hidden">
+        <div class="dashboard-heading">
+          <div>
+            <p class="eyebrow">CHAMPION MODEL · LIVE INFERENCE</p>
+            <h1>Machine health cockpit</h1>
+            <p id="signed-in-as" class="muted"></p>
+          </div>
+          <div class="model-chip">
+            <span>MODEL STATUS</span>
+            <strong><i class="live-dot"></i> Ready</strong>
+          </div>
+        </div>
+
+        <div id="model-cards" class="metric-grid skeleton-grid">
+          <article><span>Champion</span><strong>Loading…</strong></article>
+          <article><span>Version</span><strong>—</strong></article>
+          <article><span>Decision threshold</span><strong>—</strong></article>
+          <article><span>Validation PR-AUC</span><strong>—</strong></article>
+        </div>
+
+        <div class="workspace-grid">
+          <article class="panel sample-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">01</span><h2>Select held-out observation</h2></div>
+              <span id="dataset-badge" class="tag">TEST SPLIT</span>
+            </div>
+            <label class="select-label" for="sample-select">Machine observation</label>
+            <select id="sample-select"></select>
+            <div id="sample-meta" class="sample-meta"></div>
+            <button id="predict-button" class="primary-button" type="button">
+              Run champion inference <span aria-hidden="true">→</span>
+            </button>
+            <p id="inference-error" class="error-message" role="alert"></p>
+          </article>
+
+          <article class="panel result-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">02</span><h2>Inference result</h2></div>
+              <span id="result-state" class="tag neutral">WAITING</span>
+            </div>
+            <div class="gauge-wrap">
+              <div id="probability-gauge" class="gauge" style="--probability: 0deg">
+                <div><strong id="probability-value">—</strong><span>failure probability</span></div>
+              </div>
+              <div class="result-copy">
+                <span>24-hour decision</span>
+                <strong id="alert-value">No inference yet</strong>
+                <p id="ground-truth">Select a test observation to compare prediction and outcome.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel history-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">03</span><h2>Session dashboard</h2></div>
+              <span id="run-count" class="tag">0 RUNS</span>
+            </div>
+            <div class="session-kpis">
+              <div><span>Correct decisions</span><strong id="correct-count">0</strong></div>
+              <div><span>Alerts</span><strong id="alert-count">0</strong></div>
+              <div><span>Mean probability</span><strong id="mean-probability">0%</strong></div>
+            </div>
+            <div id="history-chart" class="history-chart">
+              <p class="empty-state">Inference results will appear here.</p>
+            </div>
+          </article>
+
+          <article class="panel feature-panel">
+            <div class="panel-heading">
+              <div><span class="panel-index">04</span><h2>Observation features</h2></div>
+              <button id="toggle-features" class="text-button" type="button">Show all</button>
+            </div>
+            <div id="feature-table" class="feature-table"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

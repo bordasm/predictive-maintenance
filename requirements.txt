@@ -46,6 +46,8 @@ bleach==6.4.0
     # via nbconvert
 blinker==1.9.0
     # via flask
+cachecontrol==0.14.4
+    # via firebase-admin
 cachetools==7.2.7
     # via
     #   mlflow-skinny
@@ -82,8 +84,10 @@ contourpy==1.4.0
     # via matplotlib
 cryptography==50.0.2
     # via
+    #   firebase-admin
     #   google-auth
     #   mlflow
+    #   pyjwt
 cuda-bindings==12.9.10 ; sys_platform == 'linux'
     # via torch
 cuda-pathfinder==1.8.5 ; sys_platform == 'linux'
@@ -112,6 +116,8 @@ fastjsonschema==2.22.2
     # via nbformat
 filelock==4.2.4
     # via torch
+firebase-admin==7.8.0
+    # via predictive-maintenance
 flask==3.1.3
     # via
     #   flask-cors
@@ -132,8 +138,39 @@ gitdb==4.0.12
     # via gitpython
 gitpython==3.2.1
     # via mlflow-skinny
+google-api-core==2.44.0
+    # via
+    #   firebase-admin
+    #   google-cloud-core
+    #   google-cloud-firestore
+    #   google-cloud-storage
 google-auth==2.62.0
-    # via databricks-sdk
+    # via
+    #   databricks-sdk
+    #   google-api-core
+    #   google-cloud-core
+    #   google-cloud-firestore
+    #   google-cloud-storage
+google-cloud-core==2.8.0
+    # via
+    #   google-cloud-firestore
+    #   google-cloud-storage
+google-cloud-firestore==2.34.1
+    # via
+    #   firebase-admin
+    #   predictive-maintenance
+google-cloud-storage==3.17.1
+    # via firebase-admin
+google-crc32c==1.9.0
+    # via
+    #   google-cloud-storage
+    #   google-resumable-media
+google-resumable-media==2.11.0
+    # via google-cloud-storage
+googleapis-common-protos==1.76.0
+    # via
+    #   google-api-core
+    #   grpcio-status
 graphene==3.4.3
     # via mlflow
 graphql-core==3.2.13
@@ -142,6 +179,13 @@ graphql-core==3.2.13
     #   graphql-relay
 graphql-relay==3.2.0
     # via graphene
+grpcio==1.85.1
+    # via
+    #   google-api-core
+    #   google-cloud-firestore
+    #   grpcio-status
+grpcio-status==1.85.1
+    # via google-api-core
 gunicorn==26.2.0 ; sys_platform != 'win32'
     # via mlflow
 h11==0.16.0
@@ -149,17 +193,25 @@ h11==0.16.0
     #   httpcore
     #   httpcore2
     #   uvicorn
+h2==4.4.1
+    # via httpx
+hpack==4.2.0
+    # via h2
 httpcore==1.0.9
     # via httpx
 httpcore2==2.16.0 ; sys_platform != 'emscripten'
     # via httpx2
 httpx==0.28.1
-    # via jupyterlab
+    # via
+    #   firebase-admin
+    #   jupyterlab
 httpx2==2.16.0
 httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
     # via httpx2
 huey==3.5.3
     # via mlflow
+hyperframe==6.1.0
+    # via h2
 idna==3.20
     # via
     #   anyio
@@ -270,6 +322,8 @@ mlflow-tracing==3.17.2
     # via mlflow
 mpmath==1.3.0
     # via sympy
+msgpack==1.2.4
+    # via cachecontrol
 multidict==7.2.1
     # via
     #   aiohttp
@@ -343,6 +397,7 @@ nvidia-nvtx-cu12==12.6.77 ; sys_platform == 'linux'
 opentelemetry-api==1.45.2
     # via
     #   fastapi
+    #   google-api-core
     #   mlflow-skinny
     #   mlflow-tracing
     #   opentelemetry-sdk
@@ -389,19 +444,30 @@ pluggy==1.7.0
 prettytable==3.18.0
     # via skops
 prometheus-client==0.26.0
-    # via jupyter-server
+    # via
+    #   jupyter-server
+    #   predictive-maintenance
 prompt-toolkit==3.0.53
     # via ipython
 propcache==0.5.4
     # via
     #   aiohttp
     #   yarl
+proto-plus==1.29.0
+    # via
+    #   google-api-core
+    #   google-cloud-firestore
 protobuf==7.36.2
     # via
     #   databricks-sdk
+    #   google-api-core
+    #   google-cloud-firestore
+    #   googleapis-common-protos
+    #   grpcio-status
     #   mlflow-skinny
     #   mlflow-tracing
     #   opentelemetry-proto
+    #   proto-plus
 psutil==7.2.2 ; sys_platform != 'cygwin' and sys_platform != 'emscripten'
     # via ipython
 ptyprocess==0.7.0 ; os_name != 'nt' or (sys_platform != 'emscripten' and sys_platform != 'win32')
@@ -433,6 +499,8 @@ pygments==2.21.0
     #   ipython-pygments-lexers
     #   nbconvert
     #   pytest
+pyjwt==2.15.1
+    # via firebase-admin
 pyparsing==3.3.3
     # via matplotlib
 pytest==9.2.0
@@ -470,8 +538,11 @@ referencing==0.37.0
     #   jupyter-events
 requests==2.34.2
     # via
+    #   cachecontrol
     #   databricks-sdk
     #   docker
+    #   google-api-core
+    #   google-cloud-storage
     #   jupyterlab-server
     #   mlflow-skinny
 rfc3339-validator==0.1.4
@@ -570,6 +641,7 @@ typing-extensions==4.16.0
     #   beautifulsoup4
     #   fastapi
     #   graphene
+    #   grpcio
     #   jupyter-client
     #   mlflow-skinny
     #   opentelemetry-api

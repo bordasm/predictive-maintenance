@@ -61,9 +61,32 @@ def test_inference_api_loads_champion_and_validates_requests(
         "observed_at": "2026-01-01T00:00:00Z",
         "features": payload,
     }
-    with TestClient(create_app(manifest_path, database_path)) as client:
+    demo_path = tmp_path / "demo-samples.json"
+    demo_path.write_text(
+        json.dumps(
+            {
+                "name": "Held-out test observations",
+                "split": "test",
+                "samples": [
+                    {
+                        "sample_id": "test-machine-6",
+                        "machine_id": 6,
+                        "observed_at": "2026-01-01T00:00:00Z",
+                        "actual_failure_within_horizon": False,
+                        "failure_component": None,
+                        "features": payload,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    with TestClient(
+        create_app(manifest_path, database_path, demo_data_path=demo_path)
+    ) as client:
         health = client.get("/health", headers={"X-Request-ID": "trace-test-001"})
         info = client.get("/v1/model-info")
+        demo = client.get("/v1/demo-samples")
         prediction = client.post(
             "/v1/predict", json={"observations": [request_observation]}
         )
@@ -94,6 +117,8 @@ def test_inference_api_loads_champion_and_validates_requests(
     assert health.headers["X-Frame-Options"] == "DENY"
     assert info.status_code == 200
     assert info.json()["feature_count"] == len(features)
+    assert demo.status_code == 200
+    assert demo.json()["samples"][0]["sample_id"] == "test-machine-6"
     assert prediction.status_code == 200
     assert len(prediction.json()["predictions"]) == 1
     assert (

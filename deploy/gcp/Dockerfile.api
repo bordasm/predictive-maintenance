@@ -1,0 +1,24 @@
+FROM python:3.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PREDMAINT_CHAMPION_MANIFEST=/models/champion.json \
+    PREDMAINT_DEMO_DATA=/app/data/demo/demo-samples.json \
+    PREDMAINT_PREDICTION_BACKEND=firestore
+
+WORKDIR /app
+COPY requirements-serving.txt ./
+RUN pip install --no-cache-dir -r requirements-serving.txt
+
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN pip install --no-cache-dir --no-deps .
+
+COPY model /models
+COPY data/demo /app/data/demo
+RUN useradd --create-home --uid 10001 appuser \
+    && chown -R appuser:appuser /app /models
+USER appuser
+
+EXPOSE 8080
+CMD ["uvicorn", "predictive_maintenance.serving.app:app", "--host", "0.0.0.0", "--port", "8080"]

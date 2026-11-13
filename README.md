@@ -180,6 +180,27 @@ The Transformer won the neural comparison, while the simpler deployed incumbent
 remained the overall validation champion. See the [sequence comparison](reports/sequence_comparison/README.md)
 and [machine-readable results](reports/sequence_comparison/comparison.json).
 
+## Tenth milestone
+
+The Google Cloud demonstration environment:
+
+1. packages the champion model and a compact sample drawn only from held-out
+   test machines into an immutable inference image;
+2. deploys the private FastAPI service and public dashboard to scale-to-zero
+   Cloud Run services;
+3. protects model metadata, demo data, and inference with Firebase/Identity
+   Platform email-and-password accounts and validates ID tokens at API Gateway
+   and in the application;
+4. disables public registration so accounts can be created, disabled, reset, or
+   deleted only by the project administrator in Google Cloud Console;
+5. records authenticated predictions in Firestore and presents probabilities,
+   alerts, model metadata, held-out labels, and session statistics in the
+   dashboard;
+6. provisions the complete environment with Terraform and includes suspend,
+   resume, and destroy operations for cost control.
+
+See the [Google Cloud deployment guide](deploy/gcp/README.md).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
@@ -320,9 +341,15 @@ The versioned endpoints are:
 ```text
 GET  /health
 GET  /v1/model-info
+GET  /v1/demo-samples
 POST /v1/predict
 GET  /metrics
 ```
+
+Deploy the authenticated demonstration environment to Google Cloud with the
+instructions in `deploy/gcp/README.md`. It returns separate dashboard and REST
+API URLs; REST clients obtain a short-lived Firebase ID token with their email
+and password and send it as a Bearer token.
 
 Build and run the container after Docker with the Compose plugin is available:
 
@@ -382,6 +409,8 @@ reports/security/README.md
 reports/automation/README.md
 reports/sequence_comparison/comparison.json
 reports/sequence_comparison/README.md
+deploy/gcp/terraform/main.tf
+deploy/gcp/cloud-deploy.sh
 mlflow.db
 mlruns/
 ```

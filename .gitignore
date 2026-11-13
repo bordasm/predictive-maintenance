@@ -17,3 +17,10 @@ mlruns/
 *.db
 .env
 ch.md
+deploy/gcp/generated/
+deploy/gcp/.terraform/
+deploy/gcp/*.tfstate
+deploy/gcp/*.tfstate.*
+deploy/gcp/terraform.tfvars
+.gcp-build/
+/predmaint-gcp.zip

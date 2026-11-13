@@ -1,0 +1,58 @@
+swagger: "2.0"
+info:
+  title: Predictive Maintenance Inference API
+  version: "1.0"
+schemes: [https]
+produces: [application/json]
+consumes: [application/json]
+securityDefinitions:
+  firebase:
+    authorizationUrl: ""
+    flow: implicit
+    type: oauth2
+    x-google-issuer: "https://securetoken.google.com/${project_id}"
+    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    x-google-audiences: "${project_id}"
+x-google-backend:
+  address: "${backend_url}"
+  path_translation: APPEND_PATH_TO_ADDRESS
+paths:
+  /health:
+    get:
+      operationId: health
+      security: []
+      responses:
+        "200": { description: Service readiness }
+  /v1/model-info:
+    get:
+      operationId: modelInfo
+      security: [{ firebase: [] }]
+      responses:
+        "200": { description: Champion model metadata }
+    options:
+      operationId: modelInfoCors
+      security: []
+      responses:
+        "200": { description: CORS preflight }
+  /v1/demo-samples:
+    get:
+      operationId: demoSamples
+      security: [{ firebase: [] }]
+      responses:
+        "200": { description: Held-out test observations }
+    options:
+      operationId: demoSamplesCors
+      security: []
+      responses:
+        "200": { description: CORS preflight }
+  /v1/predict:
+    post:
+      operationId: predict
+      security: [{ firebase: [] }]
+      responses:
+        "200": { description: Failure probabilities and alert decisions }
+    options:
+      operationId: predictCors
+      security: []
+      responses:
+        "200": { description: CORS preflight }
