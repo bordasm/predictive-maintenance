@@ -132,7 +132,10 @@ resource "google_cloud_run_v2_service" "api" {
         timeout_seconds       = 5
         period_seconds        = 5
         failure_threshold     = 24
-        http_get { path = "/health", port = 8080 }
+        http_get {
+          path = "/health"
+          port = 8080
+        }
       }
     }
   }
@@ -245,7 +248,10 @@ resource "google_cloud_run_v2_service" "web" {
         timeout_seconds   = 3
         period_seconds    = 5
         failure_threshold = 12
-        http_get { path = "/health", port = 8080 }
+        http_get {
+          path = "/health"
+          port = 8080
+        }
       }
     }
   }
