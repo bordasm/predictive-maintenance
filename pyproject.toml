@@ -5,17 +5,17 @@ description = "End-to-end predictive maintenance and MLOps portfolio project"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [
-    "fastapi==0.162.0",
+    "fastapi==0.162.4",
     "firebase-admin==7.8.0",
     "google-cloud-firestore==2.34.1",
     "joblib==1.6.0",
-    "mlflow==3.17.2",
+    "mlflow==3.18.0",
     "numpy==2.5.4",
-    "pandas==3.1.0",
-    "pyarrow==25.0.0",
+    "pandas==3.1.1",
+    "pyarrow==26.0.1",
     "prometheus-client==0.26.0",
     "scikit-learn==1.9.1",
-    "torch==2.14.1",
+    "torch==2.15.0",
     "uvicorn==0.54.0",
 ]
 
@@ -23,7 +23,7 @@ dependencies = [
 dev = [
     "httpx2==2.16.0",
     "ipykernel==7.4.0",
-    "jupyterlab==4.6.4",
+    "jupyterlab==4.6.6",
     "pytest==9.2.0",
 ]
 
