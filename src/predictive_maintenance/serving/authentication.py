@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import json
 from dataclasses import dataclass
 from typing import Annotated, Any, Callable
 
@@ -24,6 +26,23 @@ BEARER_TOKEN = HTTPBearer(auto_error=False)
 FORWARDED_AUTHORIZATION = APIKeyHeader(
     name="X-Forwarded-Authorization", auto_error=False
 )
+GATEWAY_USERINFO = APIKeyHeader(name="X-Apigateway-Api-Userinfo", auto_error=False)
+
+
+def _decode_gateway_userinfo(value: str, project_id: str) -> dict[str, Any]:
+    """Decode claims that API Gateway has already authenticated."""
+
+    padding = "=" * (-len(value) % 4)
+    claims = json.loads(base64.urlsafe_b64decode(value + padding))
+    if not isinstance(claims, dict):
+        raise ValueError("Gateway user info must contain a JSON object")
+
+    expected_issuer = f"https://securetoken.google.com/{project_id}"
+    audience = claims.get("aud")
+    audiences = audience if isinstance(audience, list) else [audience]
+    if claims.get("iss") != expected_issuer or project_id not in audiences:
+        raise ValueError("Gateway user info has an unexpected issuer or audience")
+    return claims
 
 
 def _firebase_verifier(project_id: str) -> TokenVerifier:
@@ -66,6 +85,9 @@ def build_identity_guard(
         bearer: Annotated[
             HTTPAuthorizationCredentials | None, Security(BEARER_TOKEN)
         ] = None,
+        gateway_userinfo: Annotated[
+            str | None, Security(GATEWAY_USERINFO)
+        ] = None,
         forwarded_authorization: Annotated[
             str | None, Security(FORWARDED_AUTHORIZATION)
         ] = None,
@@ -74,27 +96,39 @@ def build_identity_guard(
         ] = None,
     ) -> AuthenticatedUser:
         if verifier is not None:
-            token = None
-            if forwarded_authorization:
-                scheme, _, value = forwarded_authorization.partition(" ")
-                if scheme.lower() == "bearer" and value:
-                    token = value
-            if token is None and bearer is not None:
-                token = bearer.credentials
-            if token is None:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="A Firebase ID token is required",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            try:
-                claims = verifier(token)
-            except Exception as error:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="The Firebase ID token is invalid or expired",
-                    headers={"WWW-Authenticate": "Bearer"},
-                ) from error
+            if gateway_userinfo:
+                try:
+                    claims = _decode_gateway_userinfo(
+                        gateway_userinfo, firebase_project_id or ""
+                    )
+                except Exception as error:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="The API Gateway identity is invalid",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    ) from error
+            else:
+                token = None
+                if forwarded_authorization:
+                    scheme, _, value = forwarded_authorization.partition(" ")
+                    if scheme.lower() == "bearer" and value:
+                        token = value
+                if token is None and bearer is not None:
+                    token = bearer.credentials
+                if token is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="A Firebase ID token is required",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+                try:
+                    claims = verifier(token)
+                except Exception as error:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="The Firebase ID token is invalid or expired",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    ) from error
             uid = str(claims.get("uid") or claims.get("sub") or "")
             if not uid:
                 raise HTTPException(
