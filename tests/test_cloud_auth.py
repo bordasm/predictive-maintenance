@@ -41,6 +41,36 @@ def test_firebase_guard_accepts_gateway_forwarded_token() -> None:
     assert invalid.status_code == 401
 
 
+def test_firebase_guard_prefers_user_token_forwarded_by_gateway() -> None:
+    verified_tokens: list[str] = []
+
+    def verify(token: str) -> dict[str, str]:
+        verified_tokens.append(token)
+        if token != "firebase-user-token":
+            raise ValueError("invalid token")
+        return {"uid": "user-123", "email": "operator@example.com"}
+
+    guard = build_identity_guard("demo-project", token_verifier=verify)
+    app = FastAPI()
+
+    @app.get("/protected")
+    def protected(user: AuthenticatedUser = Depends(guard)) -> dict[str, str | None]:
+        return {"uid": user.uid, "email": user.email}
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/protected",
+            headers={
+                "Authorization": "Bearer cloud-run-backend-token",
+                "X-Forwarded-Authorization": "Bearer firebase-user-token",
+            },
+        )
+
+    assert response.status_code == 200
+    assert response.json() == {"uid": "user-123", "email": "operator@example.com"}
+    assert verified_tokens == ["firebase-user-token"]
+
+
 def test_identity_guard_preserves_local_anonymous_mode() -> None:
     guard = build_identity_guard(None)
     user = guard()

@@ -74,11 +74,13 @@ def build_identity_guard(
         ] = None,
     ) -> AuthenticatedUser:
         if verifier is not None:
-            token = bearer.credentials if bearer is not None else None
-            if token is None and forwarded_authorization:
+            token = None
+            if forwarded_authorization:
                 scheme, _, value = forwarded_authorization.partition(" ")
                 if scheme.lower() == "bearer" and value:
                     token = value
+            if token is None and bearer is not None:
+                token = bearer.credentials
             if token is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
