@@ -16,6 +16,7 @@ securityDefinitions:
 x-google-backend:
   address: "${backend_url}"
   path_translation: APPEND_PATH_TO_ADDRESS
+  deadline: 60.0
 paths:
   /health:
     get:
