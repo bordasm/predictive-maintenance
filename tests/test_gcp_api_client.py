@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from scripts.gcp_api_client import build_prediction_payload, parse_runtime_config
+from predictive_maintenance.cloud_client import (
+    build_prediction_payload,
+    parse_runtime_config,
+)
 
 
 def test_parse_runtime_config_extracts_public_cloud_settings() -> None:
@@ -17,7 +20,9 @@ def test_parse_runtime_config_extracts_public_cloud_settings() -> None:
 
 
 def test_prediction_payload_uses_held_out_sample(monkeypatch) -> None:
-    monkeypatch.setattr("scripts.gcp_api_client.uuid.uuid4", lambda: "request-uuid")
+    monkeypatch.setattr(
+        "predictive_maintenance.cloud_client.uuid.uuid4", lambda: "request-uuid"
+    )
     sample = {
         "sample_id": "held-out-7",
         "machine_id": 7,
