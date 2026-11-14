@@ -68,6 +68,44 @@ Authorization: Bearer <FIREBASE_ID_TOKEN>
 The Firebase Web API key identifies the Identity Platform project; it is not an
 authorization credential. Terraform passes it only to the dashboard runtime.
 
+## Live deployment
+
+The current portfolio deployment is available at:
+
+- dashboard: <https://predmaint-dashboard-agq2q67cmq-ew.a.run.app/>;
+- REST API gateway: <https://predmaint-gateway-222il7n.ew.gateway.dev>;
+- public health check: <https://predmaint-gateway-222il7n.ew.gateway.dev/health>.
+
+Protected endpoints require an administrator-created Firebase email/password
+account. The checked-in Python client reads the deployment's public Firebase
+configuration, prompts for the password without echoing it, obtains a short-lived
+ID token, lists held-out test samples, and runs one champion-model inference:
+
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = ".predmaint"
+uv run python scripts/gcp_api_client.py
+```
+
+The email can be supplied as an argument; the password is still prompted:
+
+```powershell
+uv run python scripts/gcp_api_client.py --email user@example.com
+```
+
+Useful non-default modes:
+
+```powershell
+# Authenticate and list the held-out samples without creating a prediction.
+uv run python scripts/gcp_api_client.py --email user@example.com --list-only
+
+# Run inference for a particular displayed sample index.
+uv run python scripts/gcp_api_client.py --email user@example.com --sample-index 2
+```
+
+The client keeps the password and Firebase ID token in memory only. It does not
+write credentials or tokens to disk. The Firebase Web API key is public project
+configuration and is loaded from the dashboard's `/config.js` endpoint.
+
 ## Cost control
 
 Both services use request-based billing, zero minimum instances, and at most one

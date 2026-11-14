@@ -201,6 +201,25 @@ The Google Cloud demonstration environment:
 
 See the [Google Cloud deployment guide](deploy/gcp/README.md).
 
+Live portfolio deployment:
+
+- [authenticated dashboard](https://predmaint-dashboard-agq2q67cmq-ew.a.run.app/)
+- [REST API gateway](https://predmaint-gateway-222il7n.ew.gateway.dev)
+- [public API health check](https://predmaint-gateway-222il7n.ew.gateway.dev/health)
+
+After an administrator creates a Firebase user, test the deployed REST API with
+the interactive Python client. It securely prompts for the password, obtains a
+short-lived Firebase ID token, lists held-out test observations, and runs an
+inference:
+
+```powershell
+$env:UV_PROJECT_ENVIRONMENT = ".predmaint"
+uv run python scripts/gcp_api_client.py --email user@example.com
+```
+
+See the [deployment guide](deploy/gcp/README.md#live-deployment) for list-only
+and explicit sample-selection examples.
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)
