@@ -5,6 +5,16 @@ whether any machine component will fail during the next 24 hours using the
 Microsoft Azure Predictive Maintenance sample dataset, then tracks and compares
 candidate models with MLflow.
 
+######################################
+### Business opportunities ###########
+######################################
+
+The purpose of this solution is to demonstrate the type of end-to-end predictive maintenance system I can develop. While I cannot build complete, large-scale enterprise systems on my own - nor do I aim to compete with major software development firms—this offering is ideal if you are looking to augment your existing infrastructure (such as SAP PM) with predictive maintenance capabilities. I can write the code but I can and deploying the solution, and if you need, I can operate, too. Please note that input data is required to develop and run the system which is your responsibility. If you are interested, please reach out to me at bordas.marton@gmail.com.
+If you would like to test this solution - either via the user interface or the REST API-please contact me at the same email address.
+For further technical details on using this test solution, please refer to the "Live deployment" section here: https://github.com/bordasm/predictive-maintenance/blob/main/deploy/gcp/README.md
+
+######################################
+
 The implementation deliberately separates exploratory notebooks from reusable
 code. Older TensorFlow/Keras experiments are kept under `notebooks/legacy`.
 
