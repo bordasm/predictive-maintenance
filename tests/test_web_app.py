@@ -15,10 +15,16 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
         config = client.get("/config.js")
         health = client.get("/health")
         styles = client.get("/static/styles.css")
+        script = client.get("/static/app.js")
 
     assert index.status_code == 200
     assert "RailSense" in index.text
+    assert 'data-language="en"' in index.text
+    assert 'data-language="hu"' in index.text
     assert "vectron-predictive-maintenance.png" in styles.text
+    assert script.status_code == 200
+    assert 'const DEFAULT_LANGUAGE = "en"' in script.text
+    assert "Gépállapot-irányítópult" in script.text
     assert config.status_code == 200
     assert "https://api.example.test" in config.text
     assert "public-firebase-key" in config.text
