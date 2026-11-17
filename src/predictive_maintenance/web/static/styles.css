@@ -51,7 +51,8 @@ button { cursor: pointer; }
 .topbar-meta { display: flex; align-items: center; gap: 9px; color: #adc0cf; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
 .live-dot { display: inline-block; width: 8px; height: 8px; background: var(--cyan); border-radius: 50%; box-shadow: 0 0 12px var(--cyan); }
 .language-switcher { display: flex; align-items: center; gap: 4px; margin-left: 10px; padding: 3px; border: 1px solid var(--line); background: rgba(4, 15, 25, .58); }
-.language-button { width: 36px; height: 30px; padding: 0; display: grid; place-items: center; border: 1px solid transparent; color: var(--ink); background: transparent; font-size: 1.12rem; line-height: 1; filter: saturate(.72); opacity: .66; transition: border-color .16s ease, background .16s ease, filter .16s ease, opacity .16s ease; }
+.language-button { width: 42px; height: 30px; padding: 0; display: grid; place-items: center; border: 1px solid transparent; color: var(--ink); background: transparent; line-height: 1; filter: saturate(.72); opacity: .66; transition: border-color .16s ease, background .16s ease, filter .16s ease, opacity .16s ease; }
+.flag-icon { width: 27px; height: 17px; display: block; border: 1px solid rgba(237, 247, 255, .32); box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
 .language-button:hover, .language-button:focus-visible { border-color: rgba(45, 226, 208, .42); background: rgba(45, 226, 208, .08); filter: saturate(1); opacity: 1; outline: 0; }
 .language-button.active { border-color: rgba(45, 226, 208, .55); background: rgba(45, 226, 208, .12); box-shadow: inset 0 0 12px rgba(45, 226, 208, .08); filter: saturate(1); opacity: 1; }
 
@@ -113,7 +114,7 @@ main { position: relative; z-index: 2; }
   .metric-grid { grid-template-columns: repeat(2, 1fr); }.workspace-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .topbar { padding: 0 18px; }.topbar-meta > span:not(.live-dot) { display: none; }.language-switcher { margin-left: 2px; }.language-button { width: 32px; }
+  .topbar { padding: 0 18px; }.topbar-meta > span:not(.live-dot) { display: none; }.language-switcher { margin-left: 2px; }.language-button { width: 37px; }
   .login-shell { padding: 45px 18px; }.hero-copy h1 { font-size: 3.25rem; }.hero-stats { gap: 16px; flex-wrap: wrap; }
   .dashboard { padding: 30px 12px 50px; }.dashboard-heading { align-items: start; flex-direction: column; }.model-chip { width: 100%; }
   .metric-grid { grid-template-columns: 1fr 1fr; }.sample-meta, .session-kpis { grid-template-columns: 1fr; }.sample-meta div { border-right: 0; border-bottom: 1px solid var(--line); }

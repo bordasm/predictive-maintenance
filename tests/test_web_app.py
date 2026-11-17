@@ -21,6 +21,7 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert "RailSense" in index.text
     assert 'data-language="en"' in index.text
     assert 'data-language="hu"' in index.text
+    assert index.text.count('class="flag-icon"') == 2
     assert "vectron-predictive-maintenance.png" in styles.text
     assert script.status_code == 200
     assert 'const DEFAULT_LANGUAGE = "en"' in script.text

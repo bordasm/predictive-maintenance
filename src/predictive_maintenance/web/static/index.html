@@ -32,7 +32,15 @@
             aria-label="English"
             title="English"
             aria-pressed="true"
-          ><span aria-hidden="true">🇬🇧</span></button>
+          >
+            <svg class="flag-icon" viewBox="0 0 60 36" aria-hidden="true" focusable="false">
+              <rect width="60" height="36" fill="#012169" />
+              <path d="M0 0 60 36M60 0 0 36" stroke="#fff" stroke-width="8" />
+              <path d="M0 0 60 36M60 0 0 36" stroke="#c8102e" stroke-width="4" />
+              <path d="M30 0v36M0 18h60" stroke="#fff" stroke-width="12" />
+              <path d="M30 0v36M0 18h60" stroke="#c8102e" stroke-width="7" />
+            </svg>
+          </button>
           <button
             class="language-button"
             type="button"
@@ -40,7 +48,13 @@
             aria-label="Hungarian"
             title="Hungarian"
             aria-pressed="false"
-          ><span aria-hidden="true">🇭🇺</span></button>
+          >
+            <svg class="flag-icon" viewBox="0 0 60 36" aria-hidden="true" focusable="false">
+              <rect width="60" height="12" fill="#ce2939" />
+              <rect y="12" width="60" height="12" fill="#fff" />
+              <rect y="24" width="60" height="12" fill="#477050" />
+            </svg>
+          </button>
         </div>
         <button id="logout-button" class="ghost-button hidden" type="button" data-i18n="nav.signOut">Sign out</button>
       </div>
