@@ -19,6 +19,7 @@ case "${MODE}" in
       -target=google_project_iam_member.cloud_build_artifact_writer \
       -target=google_project_iam_member.cloud_build_compute_storage_reader \
       -target=google_project_iam_member.cloud_build_compute_artifact_writer \
+      -target=google_project_iam_member.cloud_build_compute_logs_writer \
       -var="project_id=${PROJECT_ID}" \
       -var="region=${REGION}" \
       -auto-approve

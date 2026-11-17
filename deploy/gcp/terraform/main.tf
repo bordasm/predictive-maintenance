@@ -63,6 +63,15 @@ resource "google_project_iam_member" "cloud_build_compute_artifact_writer" {
   ]
 }
 
+resource "google_project_iam_member" "cloud_build_compute_logs_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${data.google_project.current.number}-compute@developer.gserviceaccount.com"
+  depends_on = [
+    google_project_service.required,
+  ]
+}
+
 resource "google_firebase_project" "default" {
   provider   = google-beta
   project    = var.project_id
