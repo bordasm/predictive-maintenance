@@ -20,19 +20,19 @@ const translations = {
     },
     details: {
       eyebrow: "INPUT EXPLAINER",
-      title: "What does one input row contain?",
-      intro: "The selected row is one feature-engineered snapshot for one machine at one point in time. The champion model scores this row independently.",
+      title: "What input does the selected model receive?",
+      intro: "The selected endpoint is a feature-engineered snapshot for one machine. The exact model input depends on the selected inference model.",
       oneRowTitle: "Why only one row?",
-      oneRowBody: "The deployed tabular champion does not fetch earlier raw records. Historical context has already been summarized into calculated features inside the selected row.",
+      oneRowBody: "HistGradientBoosting scores the displayed endpoint row. LSTM and Transformer receive a complete 48-hour sequence ending at that same row.",
       measuredTitle: "Direct measurements",
       measuredBody: "Voltage, rotational speed, pressure and vibration are sensor readings measured at the observation time.",
       calculatedTitle: "Calculated features",
       calculatedBody: "These include 3-hour and 24-hour rolling means and standard deviations, error counts from the preceding 24 hours, and days since each component was maintained.",
       contextTitle: "Machine context",
       contextBody: "Machine age and model category provide additional context. The machine ID and observation time are used for traceability, not as model features.",
-      allFeatures: "To inspect every value sent to the model, use “Show all” in panel 04, “Observation features”.",
+      allFeatures: "Panel 04, “Observation features”, shows every value in the endpoint row. For LSTM and Transformer, the REST request additionally contains the preceding 47 hourly rows.",
     },
-    status: { secure: "Secure model workspace", online: "Champion model online" },
+    status: { secure: "Secure model workspace", online: "Inference models online" },
     login: {
       eyebrow: "CONDITION INTELLIGENCE",
       headlineLine1: "See the failure",
@@ -63,11 +63,11 @@ const translations = {
       successBody: "Your request has been recorded. If it is approved, Bordás Márton will reply from bordas.marton@gmail.com. You will set your own password through a secure Firebase link; no password is sent by email.",
     },
     dashboard: {
-      eyebrow: "CHAMPION MODEL · LIVE INFERENCE",
+      eyebrow: "SELECTABLE MODELS · LIVE INFERENCE",
       cockpit: "Machine health cockpit",
       modelStatus: "MODEL STATUS",
       ready: "Ready",
-      champion: "Champion",
+      champion: "Selected model",
       loading: "Loading…",
       version: "Version",
       threshold: "Decision threshold",
@@ -75,8 +75,9 @@ const translations = {
       selectObservation: "Select held-out observation",
       testSplit: "TEST SPLIT",
       machineObservation: "Machine observation",
+      selectModel: "Inference model",
       details: "Details",
-      runInference: "Run champion inference",
+      runInference: "Run inference",
       inferenceResult: "Inference result",
       waiting: "WAITING",
       failureProbability: "failure probability",
@@ -92,6 +93,8 @@ const translations = {
       historyEmpty: "Inference results will appear here.",
       observationFeatures: "Observation features",
       showAll: "Show all",
+      rowInput: "One engineered feature row",
+      windowInput: "48 consecutive hourly feature rows",
     },
     dynamic: {
       signedInAs: "Authenticated as {email}",
@@ -185,19 +188,19 @@ const translations = {
     },
     details: {
       eyebrow: "BEMENETI ADATOK MAGYARÁZATA",
-      title: "Mit tartalmaz egy bemeneti sor?",
-      intro: "A kiválasztott sor egyetlen gép egy adott időpontra vonatkozó, előkészített feature-pillanatképe. A champion modell ezt a sort önállóan értékeli.",
+      title: "Milyen bemenetet kap a kiválasztott modell?",
+      intro: "A kiválasztott végpont egy gép adott időpontra vonatkozó, előkészített feature-pillanatképe. A tényleges modellbemenet a kiválasztott modelltől függ.",
       oneRowTitle: "Miért csak egy sor?",
-      oneRowBody: "A deployolt táblázatos champion nem tölti be a korábbi nyers adatsorokat. A történeti kontextust a kiválasztott sorban található számított jellemzők már összefoglalják.",
+      oneRowBody: "A HistGradientBoosting a megjelenített végponti sort értékeli. Az LSTM és a Transformer az ugyanennél a sornál végződő, teljes 48 órás sorozatot kapja.",
       measuredTitle: "Közvetlenül mért adatok",
       measuredBody: "A feszültség, a fordulatszám, a nyomás és a rezgés a megfigyelés időpontjában mért szenzoradat.",
       calculatedTitle: "Számított jellemzők",
       calculatedBody: "Ide tartoznak a 3 és 24 órás gördülő átlagok és szórások, az előző 24 óra hibaszámlálói, valamint az egyes komponensek karbantartása óta eltelt napok.",
       contextTitle: "Gépkontextus",
       contextBody: "A gép életkora és modellkategóriája további kontextust ad. A gépazonosító és a megfigyelési idő a nyomon követést szolgálja, nem modell-feature.",
-      allFeatures: "A modellnek átadott összes értékhez válaszd a 04-es, „A megfigyelés jellemzői” panelen az „Összes megjelenítése” lehetőséget.",
+      allFeatures: "A 04-es, „A megfigyelés jellemzői” panel a végponti sor összes értékét mutatja. Az LSTM és a Transformer REST-kérése ezen felül az előző 47 órás sort is tartalmazza.",
     },
-    status: { secure: "Biztonságos modell-munkatér", online: "A champion modell elérhető" },
+    status: { secure: "Biztonságos modell-munkatér", online: "Az inference modellek elérhetők" },
     login: {
       eyebrow: "ÁLLAPOTINTELLIGENCIA",
       headlineLine1: "Lásd előre a hibát",
@@ -228,11 +231,11 @@ const translations = {
       successBody: "A kérelmet rögzítettük. Jóváhagyás esetén Bordás Márton válaszol a bordas.marton@gmail.com címről. A jelszavát Ön állítja majd be egy biztonságos Firebase-linken; jelszót nem küldünk e-mailben.",
     },
     dashboard: {
-      eyebrow: "CHAMPION MODELL · ÉLŐ INFERENCE",
+      eyebrow: "VÁLASZTHATÓ MODELLEK · ÉLŐ INFERENCE",
       cockpit: "Gépállapot-irányítópult",
       modelStatus: "MODELLÁLLAPOT",
       ready: "Üzemkész",
-      champion: "Champion",
+      champion: "Kiválasztott modell",
       loading: "Betöltés…",
       version: "Verzió",
       threshold: "Döntési küszöb",
@@ -240,8 +243,9 @@ const translations = {
       selectObservation: "Válassz elkülönített tesztmegfigyelést",
       testSplit: "TESZTHALMAZ",
       machineObservation: "Gépmegfigyelés",
+      selectModel: "Inference modell",
       details: "Részletek",
-      runInference: "Champion inference futtatása",
+      runInference: "Inference futtatása",
       inferenceResult: "Inference eredménye",
       waiting: "VÁRAKOZÁS",
       failureProbability: "meghibásodási valószínűség",
@@ -257,6 +261,8 @@ const translations = {
       historyEmpty: "Az inference eredményei itt jelennek meg.",
       observationFeatures: "A megfigyelés jellemzői",
       showAll: "Összes megjelenítése",
+      rowInput: "Egy előkészített feature-sor",
+      windowInput: "48 egymást követő órás feature-sor",
     },
     dynamic: {
       signedInAs: "Bejelentkezve: {email}",
@@ -350,6 +356,7 @@ const state = {
   history: [],
   showAllFeatures: false,
   model: null,
+  models: [],
   dataset: null,
   loginError: null,
   inferenceError: null,
@@ -625,6 +632,25 @@ function renderModel(model) {
     <article><span>${t("dashboard.validation")}</span><strong>${formatPercentage(model.selection_value, 2)}</strong></article>`;
 }
 
+function renderModelOptions(registry) {
+  state.models = registry.models;
+  const select = $("model-select");
+  select.innerHTML = registry.models.map((model) =>
+    `<option value="${model.model}">${model.model.replaceAll("_", " ")}${model.is_default ? " ★" : ""}</option>`
+  ).join("");
+  select.value = state.model?.model || registry.default_model;
+  selectModel(select.value);
+}
+
+function selectModel(name) {
+  const model = state.models.find((item) => item.model === name);
+  if (!model) return;
+  renderModel(model);
+  $("model-input-help").textContent = t(
+    model.input_type === "sequence_window" ? "dashboard.windowInput" : "dashboard.rowInput",
+  );
+}
+
 function sampleLabel(sample) {
   return t("dynamic.machineOption", {
     machine: sample.machine_id,
@@ -761,6 +787,7 @@ function applyTranslations() {
     $("signed-in-as").textContent = t("dynamic.signedInAs", { email: state.email });
   }
   if (state.model) renderModel(state.model);
+  if (state.models.length) selectModel(state.model?.model || state.models[0].model);
   if (state.dataset) renderSampleOptions(state.dataset);
   if (state.history.length) {
     const latest = state.history[state.history.length - 1];
@@ -782,11 +809,11 @@ function setLanguage(language) {
 
 async function loadWorkspace() {
   showDashboard();
-  const [model, dataset] = await Promise.all([
-    apiFetch("/v1/model-info"),
+  const [registry, dataset] = await Promise.all([
+    apiFetch("/v1/models"),
     apiFetch("/v1/demo-samples"),
   ]);
-  renderModel(model);
+  renderModelOptions(registry);
   renderSampleOptions(dataset);
   $("service-status").textContent = t("status.online");
 }
@@ -872,6 +899,7 @@ $("confirm-logout-button").addEventListener("click", () => {
 });
 
 $("sample-select").addEventListener("change", renderSelectedSample);
+$("model-select").addEventListener("change", (event) => selectModel(event.target.value));
 
 $("toggle-features").addEventListener("click", () => {
   state.showAllFeatures = !state.showAllFeatures;
@@ -890,11 +918,13 @@ $("predict-button").addEventListener("click", async () => {
     const payload = await apiFetch("/v1/predict", {
       method: "POST",
       body: JSON.stringify({
+        model: state.model.model,
         observations: [{
           observation_id: observationId,
           machine_id: sample.machine_id,
           observed_at: sample.observed_at,
           features: sample.features,
+          ...(state.model.input_type === "sequence_window" ? { sequence: sample.sequence } : {}),
         }],
       }),
     });

@@ -133,7 +133,7 @@ The current portfolio deployment is available at:
 Protected endpoints require an administrator-created Firebase email/password
 account. The checked-in Python client reads the deployment's public Firebase
 configuration, prompts for the password without echoing it, obtains a short-lived
-ID token, lists held-out test samples, and runs one champion-model inference:
+ID token, lists held-out test samples, and runs inference with the selected model:
 
 ```powershell
 $env:UV_PROJECT_ENVIRONMENT = ".predmaint"
@@ -154,6 +154,10 @@ uv run python scripts/gcp_api_client.py --email user@example.com --list-only
 
 # Run inference for a particular displayed sample index.
 uv run python scripts/gcp_api_client.py --email user@example.com --sample-index 2
+
+# Select the tabular model, LSTM, or Transformer.
+uv run python scripts/gcp_api_client.py --email user@example.com --model lstm
+uv run python scripts/gcp_api_client.py --email user@example.com --model transformer
 ```
 
 The client keeps the password and Firebase ID token in memory only. It does not
@@ -162,11 +166,14 @@ configuration and is loaded from the dashboard's `/config.js` endpoint.
 
 ## Inference input semantics
 
-Selecting a sample in the dashboard and starting inference sends exactly one
-observation to the champion model. The API does not retrieve the machine's raw
-preceding rows from the sample identifier, machine identifier, or observation
-timestamp. Multiple observations can be submitted through the batch API, but
-the current champion scores every row independently.
+Selecting a sample in the dashboard always identifies one prediction endpoint.
+The selected model determines the input sent for that endpoint. The
+`hist_gradient_boosting` model receives the endpoint's single engineered
+feature row. The LSTM and Transformer receive an ordered 48-row hourly sequence:
+the endpoint plus its preceding 47 observations from the same machine. The API
+does not retrieve history from an identifier or timestamp; REST callers must
+provide the `sequence` field for either temporal model. The packaged held-out
+demo samples already include these leakage-safe windows.
 
 Each displayed row is already a feature-engineered snapshot. In addition to the
 current voltage, rotation, pressure, and vibration readings, it contains
@@ -179,18 +186,21 @@ exported:
 - elapsed days since maintenance for each component;
 - machine age and model category.
 
-The model therefore receives historical context in aggregated form, but it does
-not receive the individual measurements that make up those windows. The
+The tabular model therefore receives historical context in aggregated form.
+The temporal models receive 48 consecutive engineered snapshots and can also
+learn changes across that sequence. The
 `machine_id` and `observed_at` fields provide traceability and prediction
 logging; they do not cause the serving application to fetch additional history.
 The inference history chart in the dashboard is also presentation state only
 and is never fed back into the model.
 
-The deployed champion is the `hist_gradient_boosting` tabular model. The LSTM
-and Transformer sequence challengers remain offline experiments and are not
-part of this Cloud Run serving path. Serving either sequence model would require
-a different inference contract that supplies an ordered time window, or an
-online feature pipeline that builds that window before invoking the model.
+The default and overall validation champion remains
+`hist_gradient_boosting`. The deployed LSTM and Transformer are selectable
+challengers, which makes their inference behaviour and results directly
+comparable without presenting them as promoted production champions. Use
+`GET /v1/models` to discover their versions, thresholds, input types, and window
+sizes. `POST /v1/predict` accepts the `model` selector; omitting it preserves the
+backward-compatible `hist_gradient_boosting` default.
 
 ## Cost control
 

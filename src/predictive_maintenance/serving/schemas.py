@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+
+ModelName = Literal["hist_gradient_boosting", "lstm", "transformer"]
 
 
 class FeatureVector(BaseModel):
@@ -54,12 +59,25 @@ class PredictionObservation(BaseModel):
     machine_id: int = Field(ge=1)
     observed_at: datetime
     features: FeatureVector
+    sequence: list[FeatureVector] | None = Field(default=None, min_length=2, max_length=168)
 
 
 class PredictionBatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    model: ModelName = "hist_gradient_boosting"
     observations: list[PredictionObservation] = Field(min_length=1, max_length=1000)
+
+    @model_validator(mode="after")
+    def require_sequence_for_temporal_models(self) -> "PredictionBatch":
+        if self.model in {"lstm", "transformer"}:
+            missing = [item.observation_id for item in self.observations if item.sequence is None]
+            if missing:
+                raise ValueError(
+                    f"Model '{self.model}' requires a trailing feature sequence "
+                    "for every observation"
+                )
+        return self
 
 
 class Prediction(BaseModel):
@@ -91,3 +109,11 @@ class ModelInfoResponse(BaseModel):
     selection_metric: str
     selection_value: float
     mlflow_run_id: str
+    input_type: Literal["feature_row", "sequence_window"] = "feature_row"
+    window_size: int = 1
+    is_default: bool = False
+
+
+class ModelListResponse(BaseModel):
+    default_model: ModelName
+    models: list[ModelInfoResponse]

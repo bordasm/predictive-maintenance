@@ -86,6 +86,7 @@ def test_inference_api_loads_champion_and_validates_requests(
     ) as client:
         health = client.get("/health", headers={"X-Request-ID": "trace-test-001"})
         info = client.get("/v1/model-info")
+        models = client.get("/v1/models")
         demo = client.get("/v1/demo-samples")
         prediction = client.post(
             "/v1/predict", json={"observations": [request_observation]}
@@ -117,6 +118,9 @@ def test_inference_api_loads_champion_and_validates_requests(
     assert health.headers["X-Frame-Options"] == "DENY"
     assert info.status_code == 200
     assert info.json()["feature_count"] == len(features)
+    assert models.status_code == 200
+    assert models.json()["default_model"] == "hist_gradient_boosting"
+    assert models.json()["models"][0]["input_type"] == "feature_row"
     assert demo.status_code == 200
     assert demo.json()["samples"][0]["sample_id"] == "test-machine-6"
     assert prediction.status_code == 200

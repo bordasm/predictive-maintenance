@@ -1,4 +1,4 @@
-"""FastAPI application for online champion-model inference."""
+"""FastAPI application for selectable tabular and temporal inference."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from predictive_maintenance.observability.metrics import (
     ServiceMetrics,
     normalize_http_path,
 )
-from predictive_maintenance.serving.model_service import ModelService
+from predictive_maintenance.serving.model_registry import ModelRegistry
 from predictive_maintenance.serving.authentication import (
     AuthenticatedUser,
     TokenVerifier,
@@ -34,6 +34,7 @@ from predictive_maintenance.serving.security import valid_request_id
 from predictive_maintenance.serving.schemas import (
     HealthResponse,
     ModelInfoResponse,
+    ModelListResponse,
     Prediction,
     PredictionBatch,
     PredictionResponse,
@@ -55,6 +56,7 @@ def create_app(
     token_verifier: TokenVerifier | None = None,
     prediction_backend: str | None = None,
     demo_data_path: str | Path | None = None,
+    model_registry_path: str | Path | None = None,
 ) -> FastAPI:
     configured_manifest = Path(
         manifest_path
@@ -77,6 +79,8 @@ def create_app(
     configured_demo_data = Path(
         demo_data_path or os.environ.get("PREDMAINT_DEMO_DATA", DEFAULT_DEMO_DATA)
     )
+    registry_value = model_registry_path or os.environ.get("PREDMAINT_MODEL_REGISTRY")
+    configured_registry = Path(registry_value) if registry_value else None
     configured_max_request_bytes = max_request_bytes or int(
         os.environ.get("PREDMAINT_MAX_REQUEST_BYTES", DEFAULT_MAX_REQUEST_BYTES)
     )
@@ -91,7 +95,11 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
-        application.state.model_service = ModelService.load(configured_manifest)
+        application.state.model_registry = (
+            ModelRegistry.load(configured_registry)
+            if configured_registry is not None
+            else ModelRegistry.from_tabular_manifest(configured_manifest)
+        )
         application.state.prediction_logger = build_prediction_logger(
             configured_prediction_backend,
             database_path=str(configured_database),
@@ -103,10 +111,13 @@ def create_app(
             if configured_demo_data.is_file()
             else None
         )
+        default_service = application.state.model_registry.get(
+            application.state.model_registry.default_model
+        )
         metrics.set_ready(
-            model=application.state.model_service.model_name,
-            version=application.state.model_service.model_version,
-            mlflow_run_id=application.state.model_service.mlflow_run_id,
+            model=default_service.model_name,
+            version=default_service.model_version,
+            mlflow_run_id=default_service.mlflow_run_id,
         )
         yield
         metrics.readiness.set(0)
@@ -114,7 +125,7 @@ def create_app(
     application = FastAPI(
         title="Predictive Maintenance Inference API",
         description="Predict any component failure within the next 24 hours.",
-        version="1.3.0",
+        version="1.4.0",
         lifespan=lifespan,
     )
     allowed_origins = [
@@ -186,7 +197,8 @@ def create_app(
 
     @application.get("/health", response_model=HealthResponse, tags=["operations"])
     def health(request: Request) -> HealthResponse:
-        service: ModelService = request.app.state.model_service
+        registry: ModelRegistry = request.app.state.model_registry
+        service = registry.get(registry.default_model)
         return HealthResponse(
             status="ready",
             model=service.model_name,
@@ -203,7 +215,8 @@ def create_app(
         identity: AuthenticatedUser = Depends(require_identity),
     ) -> ModelInfoResponse:
         del identity
-        service: ModelService = request.app.state.model_service
+        registry: ModelRegistry = request.app.state.model_registry
+        service = registry.get(registry.default_model)
         return ModelInfoResponse(
             model=service.model_name,
             model_version=service.model_version,
@@ -212,6 +225,35 @@ def create_app(
             selection_metric=service.selection_metric,
             selection_value=service.selection_value,
             mlflow_run_id=service.mlflow_run_id,
+            input_type=service.input_type,
+            window_size=service.window_size,
+            is_default=True,
+        )
+
+    @application.get("/v1/models", response_model=ModelListResponse, tags=["inference"])
+    def models(
+        request: Request,
+        identity: AuthenticatedUser = Depends(require_identity),
+    ) -> ModelListResponse:
+        del identity
+        registry: ModelRegistry = request.app.state.model_registry
+        return ModelListResponse(
+            default_model=registry.default_model,
+            models=[
+                ModelInfoResponse(
+                    model=service.model_name,
+                    model_version=service.model_version,
+                    threshold=service.threshold,
+                    feature_count=len(service.feature_names),
+                    selection_metric=service.selection_metric,
+                    selection_value=service.selection_value,
+                    mlflow_run_id=service.mlflow_run_id,
+                    input_type=service.input_type,
+                    window_size=service.window_size,
+                    is_default=name == registry.default_model,
+                )
+                for name, service in registry.models.items()
+            ],
         )
 
     @application.get(
@@ -242,10 +284,17 @@ def create_app(
         request: Request,
         identity: AuthenticatedUser = Depends(require_identity),
     ) -> PredictionResponse:
-        service: ModelService = request.app.state.model_service
+        registry: ModelRegistry = request.app.state.model_registry
+        service = registry.get(payload.model)
         logger = request.app.state.prediction_logger
         started_at = perf_counter()
-        scores = service.predict([item.features for item in payload.observations])
+        try:
+            scores = service.predict(payload.observations)
+        except ValueError as error:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=str(error),
+            ) from error
         inference_seconds = perf_counter() - started_at
         latency_ms = inference_seconds * 1000
         metrics.observe_predictions(

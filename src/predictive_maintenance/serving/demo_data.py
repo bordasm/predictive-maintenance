@@ -20,6 +20,7 @@ class DemoSample(BaseModel):
     actual_failure_within_horizon: bool
     failure_component: str | None = None
     features: FeatureVector
+    sequence: list[FeatureVector] | None = None
 
 
 class DemoDataset(BaseModel):

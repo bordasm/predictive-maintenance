@@ -166,7 +166,7 @@ resource "google_cloud_run_v2_service" "api" {
       image = var.api_image
       ports { container_port = 8080 }
       resources {
-        limits = { cpu = "1", memory = "1Gi" }
+        limits = { cpu = "1", memory = "2Gi" }
       }
       env {
         name  = "PREDMAINT_FIREBASE_PROJECT_ID"

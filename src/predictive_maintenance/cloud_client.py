@@ -100,16 +100,28 @@ def sign_in(firebase_api_key: str, email: str, password: str, timeout: float) ->
     return token
 
 
-def build_prediction_payload(sample: dict[str, Any]) -> dict[str, Any]:
+MODEL_CHOICES = ("hist_gradient_boosting", "lstm", "transformer")
+
+
+def build_prediction_payload(
+    sample: dict[str, Any], model: str = "hist_gradient_boosting"
+) -> dict[str, Any]:
     """Convert one held-out demo sample into the versioned inference contract."""
+    observation = {
+        "observation_id": f"python-client-{sample['sample_id']}-{uuid.uuid4()}",
+        "machine_id": sample["machine_id"],
+        "observed_at": sample["observed_at"],
+        "features": sample["features"],
+    }
+    if model in {"lstm", "transformer"}:
+        sequence = sample.get("sequence")
+        if not isinstance(sequence, list) or not sequence:
+            raise ClientError(f"Demo sample does not contain the sequence required by {model}")
+        observation["sequence"] = sequence
     return {
+        "model": model,
         "observations": [
-            {
-                "observation_id": f"python-client-{sample['sample_id']}-{uuid.uuid4()}",
-                "machine_id": sample["machine_id"],
-                "observed_at": sample["observed_at"],
-                "features": sample["features"],
-            }
+            observation
         ]
     }
 
@@ -145,6 +157,7 @@ def main() -> int:
     parser.add_argument("--api-url", help="Override the API URL published by the dashboard")
     parser.add_argument("--email", help="Firebase user email; prompted when omitted")
     parser.add_argument("--sample-index", type=int)
+    parser.add_argument("--model", choices=MODEL_CHOICES, default="hist_gradient_boosting")
     parser.add_argument("--list-only", action="store_true", help="Do not run inference")
     parser.add_argument("--timeout", type=float, default=60)
     args = parser.parse_args()
@@ -163,7 +176,7 @@ def main() -> int:
             raise ClientError("A password is required")
 
         token = sign_in(config["firebaseApiKey"], email, password, args.timeout)
-        model = _request_json(f"{api_url}/v1/model-info", token=token, timeout=args.timeout)
+        registry = _request_json(f"{api_url}/v1/models", token=token, timeout=args.timeout)
         dataset = _request_json(
             f"{api_url}/v1/demo-samples", token=token, timeout=args.timeout
         )
@@ -172,9 +185,14 @@ def main() -> int:
             raise ClientError("The deployment returned no held-out test samples")
 
         print(f"\nConnected: {api_url}")
+        available = {item["model"]: item for item in registry["models"]}
+        if args.model not in available:
+            raise ClientError(f"The deployment does not provide model: {args.model}")
+        model = available[args.model]
         print(
-            f"Champion: {model['model']} | version={model['model_version']} | "
-            f"threshold={model['threshold']} | features={model['feature_count']}"
+            f"Selected model: {model['model']} | version={model['model_version']} | "
+            f"threshold={model['threshold']} | input={model['input_type']} "
+            f"({model['window_size']} row(s))"
         )
         _print_samples(samples)
         if args.list_only:
@@ -183,7 +201,7 @@ def main() -> int:
         sample = samples[_choose_sample(samples, args.sample_index)]
         response = _request_json(
             f"{api_url}/v1/predict",
-            payload=build_prediction_payload(sample),
+            payload=build_prediction_payload(sample, args.model),
             token=token,
             timeout=args.timeout,
         )

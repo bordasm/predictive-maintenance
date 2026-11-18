@@ -33,6 +33,7 @@ def test_prediction_payload_uses_held_out_sample(monkeypatch) -> None:
     payload = build_prediction_payload(sample)
 
     assert payload == {
+        "model": "hist_gradient_boosting",
         "observations": [
             {
                 "observation_id": "python-client-held-out-7-request-uuid",
@@ -42,3 +43,21 @@ def test_prediction_payload_uses_held_out_sample(monkeypatch) -> None:
             }
         ]
     }
+
+
+def test_sequence_prediction_payload_includes_window(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "predictive_maintenance.cloud_client.uuid.uuid4", lambda: "request-uuid"
+    )
+    sample = {
+        "sample_id": "held-out-8",
+        "machine_id": 8,
+        "observed_at": "2026-01-01T00:00:00Z",
+        "features": {"volt": 170.0, "model": "model1"},
+        "sequence": [{"volt": 169.0, "model": "model1"}] * 48,
+    }
+
+    payload = build_prediction_payload(sample, "transformer")
+
+    assert payload["model"] == "transformer"
+    assert len(payload["observations"][0]["sequence"]) == 48

@@ -377,6 +377,7 @@ The versioned endpoints are:
 ```text
 GET  /health
 GET  /v1/model-info
+GET  /v1/models
 GET  /v1/demo-samples
 POST /v1/predict
 GET  /metrics

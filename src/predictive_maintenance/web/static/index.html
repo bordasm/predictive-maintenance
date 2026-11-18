@@ -106,7 +106,7 @@
       <section id="dashboard-view" class="dashboard hidden">
         <div class="dashboard-heading">
           <div>
-            <p class="eyebrow" data-i18n="dashboard.eyebrow">CHAMPION MODEL · LIVE INFERENCE</p>
+            <p class="eyebrow" data-i18n="dashboard.eyebrow">SELECTABLE MODELS · LIVE INFERENCE</p>
             <h1 data-i18n="dashboard.cockpit">Machine health cockpit</h1>
             <p id="signed-in-as" class="muted"></p>
           </div>
@@ -117,7 +117,7 @@
         </div>
 
         <div id="model-cards" class="metric-grid skeleton-grid">
-          <article><span data-i18n="dashboard.champion">Champion</span><strong data-i18n="dashboard.loading">Loading…</strong></article>
+          <article><span data-i18n="dashboard.champion">Selected model</span><strong data-i18n="dashboard.loading">Loading…</strong></article>
           <article><span data-i18n="dashboard.version">Version</span><strong>—</strong></article>
           <article><span data-i18n="dashboard.threshold">Decision threshold</span><strong>—</strong></article>
           <article><span data-i18n="dashboard.validation">Validation PR-AUC</span><strong>—</strong></article>
@@ -129,6 +129,9 @@
               <div><span class="panel-index">01</span><h2 data-i18n="dashboard.selectObservation">Select held-out observation</h2></div>
               <span id="dataset-badge" class="tag" data-i18n="dashboard.testSplit">TEST SPLIT</span>
             </div>
+            <label class="select-label" for="model-select" data-i18n="dashboard.selectModel">Inference model</label>
+            <select id="model-select"></select>
+            <p id="model-input-help" class="input-help"></p>
             <div class="select-label-row">
               <label class="select-label" for="sample-select" data-i18n="dashboard.machineObservation">Machine observation</label>
               <button id="input-details-button" class="details-link" type="button" data-i18n="dashboard.details">Details</button>
@@ -136,7 +139,7 @@
             <select id="sample-select"></select>
             <div id="sample-meta" class="sample-meta"></div>
             <button id="predict-button" class="primary-button" type="button">
-              <span data-i18n="dashboard.runInference">Run champion inference</span> <span aria-hidden="true">→</span>
+              <span data-i18n="dashboard.runInference">Run inference</span> <span aria-hidden="true">→</span>
             </button>
             <p id="inference-error" class="error-message" role="alert"></p>
           </article>

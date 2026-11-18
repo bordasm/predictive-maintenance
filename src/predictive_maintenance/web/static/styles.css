@@ -118,6 +118,7 @@ select { height: 48px; padding: 0 12px; }
 .history-chart { min-height: 174px; margin-top: 22px; }.empty-state { padding: 55px 0; color: #718a9d; text-align: center; font-size: .8rem; }
 .history-row { display: grid; grid-template-columns: 35px 1fr 50px; align-items: center; gap: 10px; margin: 8px 0; color: var(--muted); font-size: .68rem; }.history-row > div { height: 7px; overflow: hidden; background: rgba(104, 145, 166, .13); }.history-row i { display: block; height: 100%; }.healthy-bar { background: var(--cyan); }.alert-bar { background: var(--amber); }.history-row strong { color: #bdced9; text-align: right; }
 .feature-table { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }.feature-table div { display: flex; justify-content: space-between; gap: 15px; padding: 10px 12px; background: #081927; }.feature-table span { overflow: hidden; color: var(--muted); font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }.feature-table strong { color: #c8d7e1; font: 600 .7rem ui-monospace, monospace; }.text-button { font-size: .7rem; }
+.input-help { margin: 8px 0 16px; color: var(--muted); font-size: .7rem; }
 
 .modal-backdrop {
   position: fixed; inset: 0; z-index: 20; padding: 24px;

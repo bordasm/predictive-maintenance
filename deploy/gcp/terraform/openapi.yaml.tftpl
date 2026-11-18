@@ -35,6 +35,17 @@ paths:
       security: []
       responses:
         "200": { description: CORS preflight }
+  /v1/models:
+    get:
+      operationId: models
+      security: [{ firebase: [] }]
+      responses:
+        "200": { description: Available inference models and input contracts }
+    options:
+      operationId: modelsCors
+      security: []
+      responses:
+        "200": { description: CORS preflight }
   /v1/demo-samples:
     get:
       operationId: demoSamples

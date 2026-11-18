@@ -10,6 +10,7 @@ import joblib
 import pandas as pd
 
 from predictive_maintenance.serving.schemas import FeatureVector
+from predictive_maintenance.sequence.data import build_window_end_indices
 
 
 def export_demo_data(
@@ -20,11 +21,16 @@ def export_demo_data(
     positive_count: int,
     negative_count: int,
     seed: int,
+    window_size: int = 48,
 ) -> None:
     frame = pd.read_parquet(feature_table)
     if "split" not in frame or "failure_within_horizon" not in frame:
         raise ValueError("Feature table does not contain split and target columns")
-    test = frame.loc[frame["split"] == "test"].copy()
+    test = (
+        frame.loc[frame["split"] == "test"]
+        .sort_values(["machineID", "datetime"])
+        .reset_index(drop=True)
+    )
     if test.empty:
         raise ValueError("The feature table has no held-out test rows")
 
@@ -34,15 +40,14 @@ def export_demo_data(
     if missing:
         raise ValueError(f"Test data is missing model features: {missing}")
 
-    positive = test.loc[test["failure_within_horizon"].astype(bool)]
-    negative = test.loc[~test["failure_within_horizon"].astype(bool)]
-    selected = pd.concat(
-        [
-            positive.sample(n=min(positive_count, len(positive)), random_state=seed),
-            negative.sample(n=min(negative_count, len(negative)), random_state=seed),
-        ],
-        ignore_index=True,
-    ).sort_values(["machineID", "datetime"])
+    endpoints = build_window_end_indices(test, window_size=window_size)
+    eligible = test.iloc[endpoints].assign(_endpoint=endpoints)
+    positive = eligible.loc[eligible["failure_within_horizon"].astype(bool)]
+    negative = eligible.loc[~eligible["failure_within_horizon"].astype(bool)]
+    selected = pd.concat([
+        positive.sample(n=min(positive_count, len(positive)), random_state=seed),
+        negative.sample(n=min(negative_count, len(negative)), random_state=seed),
+    ]).sort_values(["machineID", "datetime"])
 
     samples: list[dict[str, object]] = []
     for row in selected.to_dict(orient="records"):
@@ -54,6 +59,14 @@ def export_demo_data(
         features = FeatureVector.model_validate(
             {name: row[name] for name in feature_names}
         ).model_dump(mode="json")
+        endpoint = int(row["_endpoint"])
+        window = test.iloc[endpoint - window_size + 1 : endpoint + 1]
+        sequence = [
+            FeatureVector.model_validate(
+                {name: value[name] for name in feature_names}
+            ).model_dump(mode="json")
+            for value in window.to_dict(orient="records")
+        ]
         samples.append(
             {
                 "sample_id": (
@@ -67,6 +80,7 @@ def export_demo_data(
                 ),
                 "failure_component": None,
                 "features": features,
+                "sequence": sequence,
             }
         )
 
@@ -105,6 +119,7 @@ def main() -> None:
     parser.add_argument("--positives", type=int, default=24)
     parser.add_argument("--negatives", type=int, default=48)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--window-size", type=int, default=48)
     args = parser.parse_args()
     export_demo_data(
         args.feature_table,
@@ -113,6 +128,7 @@ def main() -> None:
         positive_count=args.positives,
         negative_count=args.negatives,
         seed=args.seed,
+        window_size=args.window_size,
     )
 
 

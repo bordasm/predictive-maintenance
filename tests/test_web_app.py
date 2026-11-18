@@ -37,7 +37,9 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'const DEFAULT_LANGUAGE = "en"' in script.text
     assert "Gépállapot-irányítópult" in script.text
     assert "A következő 24 órában hiba várható." in script.text
-    assert "What does one input row contain?" in script.text
+    assert "What input does the selected model receive?" in script.text
+    assert 'id="model-select"' in index.text
+    assert 'apiFetch("/v1/models")' in script.text
     assert "Valóban ki akar lépni?" in script.text
     assert 'openModal("logout-modal"' in script.text
     assert "Nincs még felhasználója?" in script.text
