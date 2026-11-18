@@ -57,6 +57,10 @@ def prepare(root: Path, output: Path) -> None:
 
     copy_path(root / "deploy/gcp/terraform", terraform)
     copy_path(root / "deploy/gcp/cloud-deploy.sh", output / "cloud-deploy.sh")
+    copy_path(
+        root / "deploy/gcp/configure-access-requests.sh",
+        output / "configure-access-requests.sh",
+    )
 
 
 def main() -> None:

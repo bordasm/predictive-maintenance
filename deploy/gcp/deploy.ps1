@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ProjectId,
     [string]$Region = "europe-west1",
+    [switch]$EnableAccessRequestEmail,
     [switch]$AutoApprove
 )
 
@@ -68,7 +69,8 @@ $applyArguments = @(
     "-var=project_id=$ProjectId",
     "-var=region=$Region",
     "-var=api_image=$apiImage",
-    "-var=web_image=$webImage"
+    "-var=web_image=$webImage",
+    "-var=access_request_email_enabled=$($EnableAccessRequestEmail.IsPresent.ToString().ToLowerInvariant())"
 )
 if ($AutoApprove) { $applyArguments += "-auto-approve" }
 

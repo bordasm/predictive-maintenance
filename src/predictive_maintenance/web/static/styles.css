@@ -26,7 +26,7 @@ body {
 }
 body.modal-open { overflow: hidden; }
 
-button, input, select { font: inherit; }
+button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 .hidden { display: none !important; }
 .muted { color: var(--muted); }
@@ -86,6 +86,8 @@ main { position: relative; z-index: 2; }
 .login-card input { height: 49px; padding: 0 14px; }.login-card input:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(45, 226, 208, .1); }
 .primary-button { width: 100%; min-height: 50px; margin-top: 25px; padding: 0 17px; display: flex; justify-content: space-between; align-items: center; border: 0; color: #021311; background: var(--cyan); font-weight: 800; letter-spacing: .02em; }
 .primary-button:hover { background: var(--cyan-soft); }.primary-button:disabled { opacity: .55; cursor: wait; }
+.account-request-link { width: 100%; margin-top: 14px; padding: 5px; border: 0; color: var(--cyan); background: transparent; font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.account-request-link:hover, .account-request-link:focus-visible { color: var(--cyan-soft); outline: 0; }
 .security-note { margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--line); color: #7f97a9; font-size: .72rem; }.security-note > span[aria-hidden="true"] { color: var(--cyan); margin-right: 8px; }
 .error-message { min-height: 1.2em; color: #ff8882 !important; font-size: .78rem !important; }
 .ghost-button, .text-button { border: 0; color: var(--cyan); background: transparent; }.ghost-button { margin-left: 14px; padding: 9px 12px; border: 1px solid var(--line); }
@@ -130,6 +132,7 @@ select { height: 48px; padding: 0 12px; }
 }
 .modal-card-wide { width: min(100%, 860px); }
 .modal-card-confirm { width: min(100%, 480px); }
+.access-request-card { width: min(100%, 650px); }
 .modal-card h2 { margin: 0; font-size: clamp(1.45rem, 3vw, 2rem); }
 .modal-card > p, .details-grid p { color: #afc2cf; line-height: 1.65; font-size: .88rem; }
 .modal-heading { display: flex; align-items: start; justify-content: space-between; gap: 22px; }
@@ -147,6 +150,18 @@ select { height: 48px; padding: 0 12px; }
 .split-actions { justify-content: flex-end; }
 .danger-button { color: #210500; background: var(--danger); }
 .danger-button:hover { background: #ff8c87; }
+.access-guidance { margin: 20px 0 6px; }
+.request-field { display: grid; gap: 8px; margin-top: 18px; color: #bdd0dc; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.request-field input, .request-field textarea { width: 100%; padding: 13px 14px; border: 1px solid var(--line); color: var(--ink); background: rgba(4, 15, 25, .78); outline: 0; resize: vertical; }
+.request-field input { height: 49px; }
+.request-field textarea { min-height: 145px; line-height: 1.5; }
+.request-field input:focus, .request-field textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(45, 226, 208, .1); }
+.character-counter { color: var(--muted); font-size: .68rem; font-weight: 500; letter-spacing: 0; text-align: right; text-transform: none; }
+.honeypot-field { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+.access-request-success { padding-top: 25px; text-align: center; }
+.access-request-success h3 { margin: 14px 0 10px; font-size: 1.35rem; }
+.access-request-success p { color: #afc2cf; line-height: 1.65; font-size: .88rem; }
+.success-mark { width: 58px; height: 58px; display: inline-grid; place-items: center; border: 1px solid rgba(45, 226, 208, .5); border-radius: 50%; color: var(--cyan); background: rgba(45, 226, 208, .08); font-size: 1.65rem; box-shadow: 0 0 28px rgba(45, 226, 208, .12); }
 
 @media (max-width: 900px) {
   body { background-position: 62% center; }

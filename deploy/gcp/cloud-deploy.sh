@@ -2,8 +2,9 @@
 set -euo pipefail
 
 MODE="${1:-prepare}"
-PROJECT_ID="${2:?Usage: ./cloud-deploy.sh prepare|apply PROJECT_ID [REGION]}"
+PROJECT_ID="${2:?Usage: ./cloud-deploy.sh prepare|apply PROJECT_ID [REGION] [ENABLE_ACCESS_REQUEST_EMAIL]}"
 REGION="${3:-europe-west1}"
+ACCESS_REQUEST_EMAIL_ENABLED="${4:-false}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TF_ROOT="${ROOT}/terraform"
 PLAN="${TF_ROOT}/predmaint.tfplan"
@@ -22,6 +23,7 @@ case "${MODE}" in
       -target=google_project_iam_member.cloud_build_compute_logs_writer \
       -var="project_id=${PROJECT_ID}" \
       -var="region=${REGION}" \
+      -var="access_request_email_enabled=${ACCESS_REQUEST_EMAIL_ENABLED}" \
       -auto-approve
 
     REVISION="manual-$(date -u +%Y%m%d%H%M%S)"
@@ -36,6 +38,7 @@ case "${MODE}" in
       -var="region=${REGION}" \
       -var="api_image=${API_IMAGE}" \
       -var="web_image=${WEB_IMAGE}" \
+      -var="access_request_email_enabled=${ACCESS_REQUEST_EMAIL_ENABLED}" \
       -out="${PLAN}"
     terraform -chdir="${TF_ROOT}" show -no-color "${PLAN}" > "${TF_ROOT}/predmaint-plan.txt"
     echo "Prepared ${PLAN}. Review predmaint-plan.txt, then run apply mode."

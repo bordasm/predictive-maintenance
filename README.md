@@ -230,6 +230,13 @@ uv run python scripts/gcp_api_client.py --email user@example.com
 See the [deployment guide](deploy/gcp/README.md#live-deployment) for list-only
 and explicit sample-selection examples.
 
+Visitors without an account can submit a bilingual access request from the
+signed-out dashboard. Requests are validated, rate-limited, stored in Firestore,
+and delivered to the administrator through SMTP with the credential held in
+Google Secret Manager. The workflow never generates or emails a password; an
+approved user sets their own password through Firebase. Configuration and
+privacy notes are in the [Google Cloud deployment guide](deploy/gcp/README.md#access-requests-and-secure-password-setup).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)

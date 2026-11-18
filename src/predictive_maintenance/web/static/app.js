@@ -48,7 +48,19 @@ const translations = {
       email: "Email",
       password: "Password",
       authenticate: "Authenticate",
+      noAccount: "Don't have an account yet?",
       securityNote: "Credentials are verified by Google Identity Platform.",
+    },
+    access: {
+      eyebrow: "REQUEST DEMO ACCESS",
+      title: "Ask for a user account",
+      guidance: "If you would like an account, enter your email address and tell us who you are and why you want to try the demo—for example, personal curiosity or an interest in developing a business solution. Then select “Request access”.",
+      email: "Email address",
+      message: "Message",
+      remaining: "{count} characters remaining",
+      submit: "Request access",
+      successTitle: "Request received",
+      successBody: "Your request has been recorded. If it is approved, Bordás Márton will reply from bordas.marton@gmail.com. You will set your own password through a secure Firebase link; no password is sent by email.",
     },
     dashboard: {
       eyebrow: "CHAMPION MODEL · LIVE INFERENCE",
@@ -116,6 +128,9 @@ const translations = {
       invalidEmail: "Enter a valid email address.",
       userDisabled: "This account has been disabled.",
       tooManyAttempts: "Too many attempts. Please try again later.",
+      accessRequestInvalid: "Check the email address and message, then try again.",
+      accessRequestLimited: "A request has already been sent recently. Please try again later.",
+      accessRequestUnavailable: "The request could not be sent right now. Please try again later.",
       apiRequest: "API request failed ({status}).",
       missingConfig: "This deployment is missing its Google Cloud runtime configuration.",
     },
@@ -198,7 +213,19 @@ const translations = {
       email: "E-mail",
       password: "Jelszó",
       authenticate: "Bejelentkezés",
+      noAccount: "Nincs még felhasználója?",
       securityNote: "A hitelesítő adatokat a Google Identity Platform ellenőrzi.",
+    },
+    access: {
+      eyebrow: "DEMÓ-HOZZÁFÉRÉS KÉRÉSE",
+      title: "Felhasználó kérése",
+      guidance: "Ha szeretne felhasználót kérni, adja meg az e-mail-címét, az üzenetben pedig írja le, hogy ki Ön, és milyen célból szeretné kipróbálni a felületet – például személyes kíváncsiságból, vagy mert üzleti megoldást szeretne kifejlesztetni. Ezután kattintson a „Felhasználó kérése” gombra.",
+      email: "E-mail-cím",
+      message: "Üzenet",
+      remaining: "Még {count} karakter írható be",
+      submit: "Felhasználó kérése",
+      successTitle: "A kérelem megérkezett",
+      successBody: "A kérelmet rögzítettük. Jóváhagyás esetén Bordás Márton válaszol a bordas.marton@gmail.com címről. A jelszavát Ön állítja majd be egy biztonságos Firebase-linken; jelszót nem küldünk e-mailben.",
     },
     dashboard: {
       eyebrow: "CHAMPION MODELL · ÉLŐ INFERENCE",
@@ -266,6 +293,9 @@ const translations = {
       invalidEmail: "Adj meg érvényes e-mail-címet.",
       userDisabled: "Ezt a fiókot letiltották.",
       tooManyAttempts: "Túl sok próbálkozás történt. Próbáld újra később.",
+      accessRequestInvalid: "Ellenőrizze az e-mail-címet és az üzenetet, majd próbálja újra.",
+      accessRequestLimited: "Erről a címről nemrég már érkezett kérelem. Próbálja újra később.",
+      accessRequestUnavailable: "A kérelmet most nem sikerült elküldeni. Próbálja újra később.",
       apiRequest: "Az API-kérés sikertelen ({status}).",
       missingConfig: "Ebből a deploymentből hiányzik a Google Cloud futásidejű konfigurációja.",
     },
@@ -323,6 +353,7 @@ const state = {
   dataset: null,
   loginError: null,
   inferenceError: null,
+  accessRequestError: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -405,6 +436,41 @@ function errorMessage(error) {
     return t(error.translationKey, error.translationVariables);
   }
   return error.message || t("errors.authenticationFailed");
+}
+
+function updateCharacterCounters() {
+  const emailRemaining = 100 - $("request-email").value.length;
+  const messageRemaining = 1000 - $("request-message").value.length;
+  $("request-email-counter").textContent = t("access.remaining", { count: emailRemaining });
+  $("request-message-counter").textContent = t("access.remaining", { count: messageRemaining });
+}
+
+function resetAccessRequestForm() {
+  $("access-request-form").reset();
+  $("request-email").value = $("email").value.trim();
+  state.accessRequestError = null;
+  $("access-request-error").textContent = "";
+  $("access-request-form-view").classList.remove("hidden");
+  $("access-request-success").classList.add("hidden");
+  $("submit-access-request").disabled = false;
+  updateCharacterCounters();
+}
+
+async function submitAccessRequest() {
+  const response = await fetch("/access-requests", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: $("request-email").value.trim(),
+      message: $("request-message").value.trim(),
+      locale: state.language,
+      website: $("request-website").value,
+    }),
+  });
+  if (response.ok) return;
+  if (response.status === 422) throw localizedError("errors.accessRequestInvalid");
+  if (response.status === 429) throw localizedError("errors.accessRequestLimited");
+  throw localizedError("errors.accessRequestUnavailable");
 }
 
 function locale() {
@@ -703,6 +769,8 @@ function applyTranslations() {
   renderHistory();
   $("login-error").textContent = errorMessage(state.loginError);
   $("inference-error").textContent = errorMessage(state.inferenceError);
+  $("access-request-error").textContent = errorMessage(state.accessRequestError);
+  updateCharacterCounters();
 }
 
 function setLanguage(language) {
@@ -741,6 +809,33 @@ document.querySelectorAll(".modal-backdrop").forEach((modal) => {
 
 $("input-details-button").addEventListener("click", (event) => {
   openModal("input-details-modal", event.currentTarget);
+});
+
+$("open-access-request").addEventListener("click", (event) => {
+  resetAccessRequestForm();
+  openModal("access-request-modal", event.currentTarget);
+  $("request-email").focus();
+});
+
+$("request-email").addEventListener("input", updateCharacterCounters);
+$("request-message").addEventListener("input", updateCharacterCounters);
+
+$("access-request-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  state.accessRequestError = null;
+  $("access-request-error").textContent = "";
+  $("submit-access-request").disabled = true;
+  try {
+    await submitAccessRequest();
+    $("access-request-form-view").classList.add("hidden");
+    $("access-request-success").classList.remove("hidden");
+    $("access-request-success").querySelector("button").focus();
+  } catch (error) {
+    state.accessRequestError = error;
+    $("access-request-error").textContent = errorMessage(error);
+  } finally {
+    $("submit-access-request").disabled = false;
+  }
 });
 
 $("login-form").addEventListener("submit", async (event) => {

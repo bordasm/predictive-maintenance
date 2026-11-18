@@ -26,3 +26,39 @@ variable "web_image" {
   type        = string
   default     = "us-docker.pkg.dev/cloudrun/container/hello"
 }
+
+variable "access_request_email_enabled" {
+  description = "Inject the SMTP password secret and send access-request notifications."
+  type        = bool
+  default     = false
+}
+
+variable "access_request_recipient" {
+  description = "Administrator address that receives access requests."
+  type        = string
+  default     = "bordas.marton@gmail.com"
+}
+
+variable "smtp_user" {
+  description = "SMTP account and From address used for access-request notifications."
+  type        = string
+  default     = "bordas.marton@gmail.com"
+}
+
+variable "smtp_host" {
+  description = "TLS-enabled SMTP server."
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "smtp_port" {
+  description = "SMTP-over-TLS port."
+  type        = number
+  default     = 465
+}
+
+variable "smtp_password_secret_id" {
+  description = "Existing Secret Manager secret containing the SMTP app password."
+  type        = string
+  default     = "predmaint-smtp-password"
+}

@@ -92,6 +92,9 @@
             <span data-i18n="login.authenticate">Authenticate</span>
             <span aria-hidden="true">→</span>
           </button>
+          <button id="open-access-request" class="account-request-link" type="button" data-i18n="login.noAccount">
+            Don't have an account yet?
+          </button>
           <p id="login-error" class="error-message" role="alert"></p>
           <div class="security-note">
             <span aria-hidden="true">◆</span>
@@ -181,6 +184,50 @@
         </div>
       </section>
     </main>
+
+    <div id="access-request-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="access-request-title">
+      <div class="modal-card access-request-card">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow" data-i18n="access.eyebrow">REQUEST DEMO ACCESS</p>
+            <h2 id="access-request-title" data-i18n="access.title">Ask for a user account</h2>
+          </div>
+          <button class="modal-close" type="button" data-close-modal="access-request-modal" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <div id="access-request-form-view">
+          <p class="access-guidance" data-i18n="access.guidance">If you would like an account, enter your email address and tell us who you are and why you want to try the demo—for example, personal curiosity or an interest in developing a business solution. Then select “Request access”.</p>
+          <form id="access-request-form">
+            <label class="request-field" for="request-email">
+              <span data-i18n="access.email">Email address</span>
+              <input id="request-email" type="email" maxlength="100" autocomplete="email" required />
+              <small id="request-email-counter" class="character-counter" aria-live="polite"></small>
+            </label>
+            <label class="request-field" for="request-message">
+              <span data-i18n="access.message">Message</span>
+              <textarea id="request-message" maxlength="1000" rows="7" required></textarea>
+              <small id="request-message-counter" class="character-counter" aria-live="polite"></small>
+            </label>
+            <label class="honeypot-field" aria-hidden="true">
+              Website
+              <input id="request-website" type="text" tabindex="-1" autocomplete="off" />
+            </label>
+            <p id="access-request-error" class="error-message" role="alert"></p>
+            <div class="modal-actions">
+              <button class="ghost-button" type="button" data-close-modal="access-request-modal" data-i18n="common.close">Close</button>
+              <button id="submit-access-request" class="primary-button compact-button" type="submit" data-i18n="access.submit">Request access</button>
+            </div>
+          </form>
+        </div>
+        <div id="access-request-success" class="access-request-success hidden" role="status">
+          <span class="success-mark" aria-hidden="true">✓</span>
+          <h3 data-i18n="access.successTitle">Request received</h3>
+          <p data-i18n="access.successBody">Your request has been recorded. If it is approved, Bordás Márton will reply from bordas.marton@gmail.com. You will set your own password through a secure Firebase link; no password is sent by email.</p>
+          <div class="modal-actions">
+            <button class="primary-button compact-button" type="button" data-close-modal="access-request-modal" data-i18n="common.close">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="input-details-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="input-details-title">
       <div class="modal-card modal-card-wide">

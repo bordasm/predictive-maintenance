@@ -7,6 +7,7 @@ locals {
     "firestore.googleapis.com",
     "identitytoolkit.googleapis.com",
     "run.googleapis.com",
+    "secretmanager.googleapis.com",
     "servicecontrol.googleapis.com",
     "servicemanagement.googleapis.com",
   ])
@@ -113,6 +114,32 @@ resource "google_service_account" "api" {
   project      = var.project_id
   account_id   = "predmaint-api"
   display_name = "Predictive maintenance inference API"
+}
+
+resource "google_service_account" "web" {
+  project      = var.project_id
+  account_id   = "predmaint-dashboard"
+  display_name = "Predictive maintenance dashboard"
+}
+
+resource "google_project_iam_member" "web_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.web.email}"
+}
+
+data "google_secret_manager_secret" "smtp_password" {
+  count     = var.access_request_email_enabled ? 1 : 0
+  project   = var.project_id
+  secret_id = var.smtp_password_secret_id
+}
+
+resource "google_secret_manager_secret_iam_member" "web_smtp_password" {
+  count     = var.access_request_email_enabled ? 1 : 0
+  project   = var.project_id
+  secret_id = data.google_secret_manager_secret.smtp_password[0].secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.web.email}"
 }
 
 resource "google_project_iam_member" "api_firestore" {
@@ -259,6 +286,7 @@ resource "google_cloud_run_v2_service" "web" {
     max_instance_count = 1
   }
   template {
+    service_account                  = google_service_account.web.email
     max_instance_request_concurrency = 20
     containers {
       image = var.web_image
@@ -278,6 +306,34 @@ resource "google_cloud_run_v2_service" "web" {
         name  = "PREDMAINT_FIREBASE_API_KEY"
         value = google_identity_platform_config.auth.client[0].api_key
       }
+      env {
+        name  = "PREDMAINT_ACCESS_REQUEST_RECIPIENT"
+        value = var.access_request_recipient
+      }
+      env {
+        name  = "PREDMAINT_SMTP_USER"
+        value = var.smtp_user
+      }
+      env {
+        name  = "PREDMAINT_SMTP_HOST"
+        value = var.smtp_host
+      }
+      env {
+        name  = "PREDMAINT_SMTP_PORT"
+        value = tostring(var.smtp_port)
+      }
+      dynamic "env" {
+        for_each = var.access_request_email_enabled ? [1] : []
+        content {
+          name = "PREDMAINT_SMTP_PASSWORD"
+          value_source {
+            secret_key_ref {
+              secret  = data.google_secret_manager_secret.smtp_password[0].secret_id
+              version = "latest"
+            }
+          }
+        }
+      }
       startup_probe {
         timeout_seconds   = 3
         period_seconds    = 5
@@ -289,7 +345,11 @@ resource "google_cloud_run_v2_service" "web" {
       }
     }
   }
-  depends_on = [google_api_gateway_gateway.inference]
+  depends_on = [
+    google_api_gateway_gateway.inference,
+    google_project_iam_member.web_firestore,
+    google_secret_manager_secret_iam_member.web_smtp_password,
+  ]
 }
 
 resource "google_cloud_run_v2_service_iam_member" "public_web" {
