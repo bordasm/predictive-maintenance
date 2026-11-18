@@ -74,6 +74,13 @@ after the secret exists, enable it with:
 .\deploy\gcp\deploy.ps1 -ProjectId <PROJECT_ID> -Region europe-west1 -EnableAccessRequestEmail
 ```
 
+To update only the dashboard from a checked-out repository, without rebuilding
+the inference API, run:
+
+```bash
+./deploy/gcp/deploy-dashboard-only.sh <PROJECT_ID> europe-west1
+```
+
 If SMTP delivery fails, the request remains in Firestore with
 `notification_sent = false` for recovery. Delete processed requests when they
 are no longer needed, because their email addresses and messages are personal
