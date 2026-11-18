@@ -4,9 +4,34 @@ const DEFAULT_LANGUAGE = "en";
 
 const translations = {
   en: {
-    brand: { home: "RailSense home" },
+    brand: {
+      home: "RailSense home",
+      name: "RailSense - not only for railways (this is a demo)",
+    },
     language: { selector: "Language", english: "English", hungarian: "Hungarian" },
     nav: { signOut: "Sign out" },
+    common: { close: "Close" },
+    logout: {
+      eyebrow: "CONFIRM SIGN OUT",
+      title: "Do you really want to sign out?",
+      body: "Your inference history for this browser session will be cleared.",
+      yes: "Yes",
+      no: "No",
+    },
+    details: {
+      eyebrow: "INPUT EXPLAINER",
+      title: "What does one input row contain?",
+      intro: "The selected row is one feature-engineered snapshot for one machine at one point in time. The champion model scores this row independently.",
+      oneRowTitle: "Why only one row?",
+      oneRowBody: "The deployed tabular champion does not fetch earlier raw records. Historical context has already been summarized into calculated features inside the selected row.",
+      measuredTitle: "Direct measurements",
+      measuredBody: "Voltage, rotational speed, pressure and vibration are sensor readings measured at the observation time.",
+      calculatedTitle: "Calculated features",
+      calculatedBody: "These include 3-hour and 24-hour rolling means and standard deviations, error counts from the preceding 24 hours, and days since each component was maintained.",
+      contextTitle: "Machine context",
+      contextBody: "Machine age and model category provide additional context. The machine ID and observation time are used for traceability, not as model features.",
+      allFeatures: "To inspect every value sent to the model, use “Show all” in panel 04, “Observation features”.",
+    },
     status: { secure: "Secure model workspace", online: "Champion model online" },
     login: {
       eyebrow: "CONDITION INTELLIGENCE",
@@ -38,12 +63,14 @@ const translations = {
       selectObservation: "Select held-out observation",
       testSplit: "TEST SPLIT",
       machineObservation: "Machine observation",
+      details: "Details",
       runInference: "Run champion inference",
       inferenceResult: "Inference result",
       waiting: "WAITING",
       failureProbability: "failure probability",
-      decision24h: "24-hour decision",
+      decision24h: "Prediction for the next 24 hours",
       noInference: "No inference yet",
+      decisionHelp: "Run inference to see whether the model expects a failure in the next 24 hours.",
       selectToCompare: "Select a test observation to compare prediction and outcome.",
       sessionDashboard: "Session dashboard",
       zeroRuns: "0 RUNS",
@@ -70,6 +97,10 @@ const translations = {
       showAllCount: "Show all {count}",
       maintenanceAlert: "Maintenance alert",
       continueOperation: "Continue operation",
+      failureExpected24h: "A failure is expected within the next 24 hours.",
+      noFailureExpected24h: "No failure is expected within the next 24 hours.",
+      aboveThreshold: "The predicted failure probability meets or exceeds the decision threshold, so the model raises a maintenance alert for the 24-hour horizon.",
+      belowThreshold: "The predicted failure probability is below the decision threshold, so the model does not raise a maintenance alert for the 24-hour horizon.",
       decisionMatch: "The decision matches the held-out outcome.",
       decisionMismatch: "The decision differs from the held-out outcome.",
       match: "MATCH",
@@ -123,9 +154,34 @@ const translations = {
     },
   },
   hu: {
-    brand: { home: "RailSense kezdőlap" },
+    brand: {
+      home: "RailSense kezdőlap",
+      name: "RailSense – nem csak vasutakhoz (ez egy demó)",
+    },
     language: { selector: "Nyelv", english: "Angol", hungarian: "Magyar" },
     nav: { signOut: "Kijelentkezés" },
+    common: { close: "Bezárás" },
+    logout: {
+      eyebrow: "KIJELENTKEZÉS MEGERŐSÍTÉSE",
+      title: "Valóban ki akar lépni?",
+      body: "A jelenlegi böngésző-munkamenet inference-előzményei törlődnek.",
+      yes: "Igen",
+      no: "Nem",
+    },
+    details: {
+      eyebrow: "BEMENETI ADATOK MAGYARÁZATA",
+      title: "Mit tartalmaz egy bemeneti sor?",
+      intro: "A kiválasztott sor egyetlen gép egy adott időpontra vonatkozó, előkészített feature-pillanatképe. A champion modell ezt a sort önállóan értékeli.",
+      oneRowTitle: "Miért csak egy sor?",
+      oneRowBody: "A deployolt táblázatos champion nem tölti be a korábbi nyers adatsorokat. A történeti kontextust a kiválasztott sorban található számított jellemzők már összefoglalják.",
+      measuredTitle: "Közvetlenül mért adatok",
+      measuredBody: "A feszültség, a fordulatszám, a nyomás és a rezgés a megfigyelés időpontjában mért szenzoradat.",
+      calculatedTitle: "Számított jellemzők",
+      calculatedBody: "Ide tartoznak a 3 és 24 órás gördülő átlagok és szórások, az előző 24 óra hibaszámlálói, valamint az egyes komponensek karbantartása óta eltelt napok.",
+      contextTitle: "Gépkontextus",
+      contextBody: "A gép életkora és modellkategóriája további kontextust ad. A gépazonosító és a megfigyelési idő a nyomon követést szolgálja, nem modell-feature.",
+      allFeatures: "A modellnek átadott összes értékhez válaszd a 04-es, „A megfigyelés jellemzői” panelen az „Összes megjelenítése” lehetőséget.",
+    },
     status: { secure: "Biztonságos modell-munkatér", online: "A champion modell elérhető" },
     login: {
       eyebrow: "ÁLLAPOTINTELLIGENCIA",
@@ -157,12 +213,14 @@ const translations = {
       selectObservation: "Válassz elkülönített tesztmegfigyelést",
       testSplit: "TESZTHALMAZ",
       machineObservation: "Gépmegfigyelés",
+      details: "Részletek",
       runInference: "Champion inference futtatása",
       inferenceResult: "Inference eredménye",
       waiting: "VÁRAKOZÁS",
       failureProbability: "meghibásodási valószínűség",
-      decision24h: "24 órás döntés",
+      decision24h: "Előrejelzés a következő 24 órára",
       noInference: "Még nincs inference",
+      decisionHelp: "Futtass inference-t annak megállapításához, hogy a modell vár-e hibát a következő 24 órában.",
       selectToCompare: "Válassz tesztmegfigyelést a predikció és a tényleges eredmény összehasonlításához.",
       sessionDashboard: "Munkamenet-irányítópult",
       zeroRuns: "0 FUTÁS",
@@ -189,6 +247,10 @@ const translations = {
       showAllCount: "Mind a(z) {count} megjelenítése",
       maintenanceAlert: "Karbantartási riasztás",
       continueOperation: "Üzem folytatása",
+      failureExpected24h: "A következő 24 órában hiba várható.",
+      noFailureExpected24h: "A következő 24 órában nem várható hiba.",
+      aboveThreshold: "A becsült meghibásodási valószínűség eléri vagy meghaladja a döntési küszöböt, ezért a modell karbantartási riasztást ad a 24 órás időhorizontra.",
+      belowThreshold: "A becsült meghibásodási valószínűség a döntési küszöb alatt marad, ezért a modell nem ad karbantartási riasztást a 24 órás időhorizontra.",
       decisionMatch: "A döntés egyezik a tényleges teszteredménnyel.",
       decisionMismatch: "A döntés eltér a tényleges teszteredménytől.",
       match: "EGYEZÉS",
@@ -264,6 +326,57 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+let activeModal = null;
+let modalReturnFocus = null;
+
+function modalFocusableElements(modal) {
+  return [...modal.querySelectorAll(
+    'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+  )].filter((element) => !element.classList.contains("hidden"));
+}
+
+function openModal(id, trigger = document.activeElement) {
+  const modal = $(id);
+  if (!modal) return;
+  if (activeModal && activeModal !== modal) closeModal(activeModal.id, false);
+  modalReturnFocus = trigger;
+  activeModal = modal;
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  modalFocusableElements(modal)[0]?.focus();
+}
+
+function closeModal(id = activeModal?.id, restoreFocus = true) {
+  const modal = id ? $(id) : activeModal;
+  if (!modal) return;
+  modal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+  activeModal = null;
+  const returnTarget = modalReturnFocus;
+  modalReturnFocus = null;
+  if (restoreFocus && returnTarget?.isConnected) returnTarget.focus();
+}
+
+function handleModalKeydown(event) {
+  if (!activeModal) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeModal();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = modalFocusableElements(activeModal);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 function translationValue(language, key) {
   return key.split(".").reduce((value, part) => value?.[part], translations[language]);
@@ -420,6 +533,7 @@ async function apiFetch(path, options = {}) {
 }
 
 function showLogin(error = null) {
+  if (activeModal) closeModal(activeModal.id, false);
   state.loginError = error;
   $("login-view").classList.remove("hidden");
   $("dashboard-view").classList.add("hidden");
@@ -513,9 +627,12 @@ function renderResult(sample, prediction) {
   $("probability-gauge").style.setProperty("--probability", `${degrees}deg`);
   $("probability-value").textContent = formatPercentage(probability);
   $("alert-value").textContent = t(
-    prediction.alert ? "dynamic.maintenanceAlert" : "dynamic.continueOperation",
+    prediction.alert ? "dynamic.failureExpected24h" : "dynamic.noFailureExpected24h",
   );
   $("alert-value").className = prediction.alert ? "warn" : "ok";
+  $("decision-explanation").textContent = t(
+    prediction.alert ? "dynamic.aboveThreshold" : "dynamic.belowThreshold",
+  );
   const correct = prediction.alert === sample.actual_failure_within_horizon;
   $("ground-truth").textContent = t(
     correct ? "dynamic.decisionMatch" : "dynamic.decisionMismatch",
@@ -610,6 +727,22 @@ document.querySelectorAll(".language-button").forEach((button) => {
   button.addEventListener("click", () => setLanguage(button.dataset.language));
 });
 
+document.addEventListener("keydown", handleModalKeydown);
+
+document.querySelectorAll("[data-close-modal]").forEach((button) => {
+  button.addEventListener("click", () => closeModal(button.dataset.closeModal));
+});
+
+document.querySelectorAll(".modal-backdrop").forEach((modal) => {
+  modal.addEventListener("mousedown", (event) => {
+    if (event.target === modal) closeModal(modal.id);
+  });
+});
+
+$("input-details-button").addEventListener("click", (event) => {
+  openModal("input-details-modal", event.currentTarget);
+});
+
 $("login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   state.loginError = null;
@@ -627,6 +760,15 @@ $("login-form").addEventListener("submit", async (event) => {
 });
 
 $("logout-button").addEventListener("click", () => {
+  openModal("logout-modal", $("logout-button"));
+});
+
+$("cancel-logout-button").addEventListener("click", () => {
+  closeModal("logout-modal");
+});
+
+$("confirm-logout-button").addEventListener("click", () => {
+  closeModal("logout-modal", false);
   clearSession();
   state.history = [];
   state.inferenceError = null;

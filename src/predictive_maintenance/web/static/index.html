@@ -14,7 +14,7 @@
     <header class="topbar">
       <a class="brand" href="/" aria-label="RailSense home" data-i18n-aria-label="brand.home">
         <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>RailSense</span>
+        <span data-i18n="brand.name">RailSense - not only for railways (this is a demo)</span>
       </a>
       <div class="topbar-meta">
         <span class="live-dot"></span>
@@ -126,7 +126,10 @@
               <div><span class="panel-index">01</span><h2 data-i18n="dashboard.selectObservation">Select held-out observation</h2></div>
               <span id="dataset-badge" class="tag" data-i18n="dashboard.testSplit">TEST SPLIT</span>
             </div>
-            <label class="select-label" for="sample-select" data-i18n="dashboard.machineObservation">Machine observation</label>
+            <div class="select-label-row">
+              <label class="select-label" for="sample-select" data-i18n="dashboard.machineObservation">Machine observation</label>
+              <button id="input-details-button" class="details-link" type="button" data-i18n="dashboard.details">Details</button>
+            </div>
             <select id="sample-select"></select>
             <div id="sample-meta" class="sample-meta"></div>
             <button id="predict-button" class="primary-button" type="button">
@@ -145,8 +148,9 @@
                 <div><strong id="probability-value">—</strong><span data-i18n="dashboard.failureProbability">failure probability</span></div>
               </div>
               <div class="result-copy">
-                <span data-i18n="dashboard.decision24h">24-hour decision</span>
+                <span data-i18n="dashboard.decision24h">Prediction for the next 24 hours</span>
                 <strong id="alert-value" data-i18n="dashboard.noInference">No inference yet</strong>
+                <p id="decision-explanation" data-i18n="dashboard.decisionHelp">Run inference to see whether the model expects a failure in the next 24 hours.</p>
                 <p id="ground-truth" data-i18n="dashboard.selectToCompare">Select a test observation to compare prediction and outcome.</p>
               </div>
             </div>
@@ -177,5 +181,52 @@
         </div>
       </section>
     </main>
+
+    <div id="input-details-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="input-details-title">
+      <div class="modal-card modal-card-wide">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow" data-i18n="details.eyebrow">INPUT EXPLAINER</p>
+            <h2 id="input-details-title" data-i18n="details.title">What does one input row contain?</h2>
+          </div>
+          <button class="modal-close" type="button" data-close-modal="input-details-modal" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <p data-i18n="details.intro">The selected row is one feature-engineered snapshot for one machine at one point in time. The champion model scores this row independently.</p>
+        <div class="details-grid">
+          <section>
+            <h3 data-i18n="details.oneRowTitle">Why only one row?</h3>
+            <p data-i18n="details.oneRowBody">The deployed tabular champion does not fetch earlier raw records. Historical context has already been summarized into calculated features inside the selected row.</p>
+          </section>
+          <section>
+            <h3 data-i18n="details.measuredTitle">Direct measurements</h3>
+            <p data-i18n="details.measuredBody">Voltage, rotational speed, pressure and vibration are sensor readings measured at the observation time.</p>
+          </section>
+          <section>
+            <h3 data-i18n="details.calculatedTitle">Calculated features</h3>
+            <p data-i18n="details.calculatedBody">These include 3-hour and 24-hour rolling means and standard deviations, error counts from the preceding 24 hours, and days since each component was maintained.</p>
+          </section>
+          <section>
+            <h3 data-i18n="details.contextTitle">Machine context</h3>
+            <p data-i18n="details.contextBody">Machine age and model category provide additional context. The machine ID and observation time are used for traceability, not as model features.</p>
+          </section>
+        </div>
+        <p class="modal-callout" data-i18n="details.allFeatures">To inspect every value sent to the model, use “Show all” in panel 04, “Observation features”.</p>
+        <div class="modal-actions">
+          <button class="primary-button compact-button" type="button" data-close-modal="input-details-modal" data-i18n="common.close">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="logout-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+      <div class="modal-card modal-card-confirm">
+        <p class="eyebrow" data-i18n="logout.eyebrow">CONFIRM SIGN OUT</p>
+        <h2 id="logout-title" data-i18n="logout.title">Do you really want to sign out?</h2>
+        <p data-i18n="logout.body">Your inference history for this browser session will be cleared.</p>
+        <div class="modal-actions split-actions">
+          <button id="cancel-logout-button" class="ghost-button" type="button" data-i18n="logout.no">No</button>
+          <button id="confirm-logout-button" class="primary-button compact-button danger-button" type="button" data-i18n="logout.yes">Yes</button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
