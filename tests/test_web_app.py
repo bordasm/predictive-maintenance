@@ -32,6 +32,7 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'maxlength="100"' in index.text
     assert 'maxlength="1000"' in index.text
     assert 'id="decision-explanation"' in index.text
+    assert 'id="result-model"' in index.text
     assert "vectron-predictive-maintenance.png" in styles.text
     assert script.status_code == 200
     assert 'const DEFAULT_LANGUAGE = "en"' in script.text
@@ -40,6 +41,7 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert "What input does the selected model receive?" in script.text
     assert 'id="model-select"' in index.text
     assert 'apiFetch("/v1/models")' in script.text
+    assert 'M${item.sample.machine_id} · ${modelLabel(item.model)}' in script.text
     assert "Valóban ki akar lépni?" in script.text
     assert 'openModal("logout-modal"' in script.text
     assert "Nincs még felhasználója?" in script.text

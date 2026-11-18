@@ -1,6 +1,11 @@
 const config = window.PREDMAINT_CONFIG || {};
 const SUPPORTED_LANGUAGES = ["en", "hu"];
 const DEFAULT_LANGUAGE = "en";
+const MODEL_LABELS = {
+  hist_gradient_boosting: "HistGradientBoosting",
+  lstm: "LSTM",
+  transformer: "Transformer",
+};
 
 const translations = {
   en: {
@@ -505,6 +510,10 @@ function featureLabel(name) {
   return translated ?? name.replaceAll("_", " ");
 }
 
+function modelLabel(name) {
+  return MODEL_LABELS[name] ?? String(name || "—").replaceAll("_", " ");
+}
+
 function setSession(payload, email) {
   state.token = payload.idToken;
   state.refreshToken = payload.refreshToken;
@@ -713,11 +722,12 @@ function renderFeatures(features) {
     : t("dynamic.showAllCount", { count: entries.length });
 }
 
-function renderResult(sample, prediction) {
+function renderResult(sample, prediction, model) {
   const probability = prediction.failure_probability;
   const degrees = Math.max(0, Math.min(360, probability * 360));
   $("probability-gauge").style.setProperty("--probability", `${degrees}deg`);
   $("probability-value").textContent = formatPercentage(probability);
+  $("result-model").textContent = modelLabel(model);
   $("alert-value").textContent = t(
     prediction.alert ? "dynamic.failureExpected24h" : "dynamic.noFailureExpected24h",
   );
@@ -756,7 +766,7 @@ function renderHistory() {
     .map((item) => {
       const percentage = item.prediction.failure_probability * 100;
       return `<div class="history-row">
-        <span>M${item.sample.machine_id}</span>
+        <span>M${item.sample.machine_id} · ${modelLabel(item.model)}</span>
         <div><i style="width:${Math.max(2, percentage)}%" class="${item.prediction.alert ? "alert-bar" : "healthy-bar"}"></i></div>
         <strong>${formatPercentage(item.prediction.failure_probability)}</strong>
       </div>`;
@@ -791,7 +801,7 @@ function applyTranslations() {
   if (state.dataset) renderSampleOptions(state.dataset);
   if (state.history.length) {
     const latest = state.history[state.history.length - 1];
-    renderResult(latest.sample, latest.prediction);
+    renderResult(latest.sample, latest.prediction, latest.model);
   }
   renderHistory();
   $("login-error").textContent = errorMessage(state.loginError);
@@ -932,9 +942,10 @@ $("predict-button").addEventListener("click", async () => {
     state.history.push({
       sample,
       prediction,
+      model: payload.model,
       correct: prediction.alert === sample.actual_failure_within_horizon,
     });
-    renderResult(sample, prediction);
+    renderResult(sample, prediction, payload.model);
     renderHistory();
   } catch (error) {
     state.inferenceError = error;
