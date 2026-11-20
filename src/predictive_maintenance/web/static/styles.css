@@ -88,6 +88,7 @@ main { position: relative; z-index: 2; }
 .primary-button:hover { background: var(--cyan-soft); }.primary-button:disabled { opacity: .55; cursor: wait; }
 .account-request-link { width: 100%; margin-top: 14px; padding: 5px; border: 0; color: var(--cyan); background: transparent; font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
 .account-request-link:hover, .account-request-link:focus-visible { color: var(--cyan-soft); outline: 0; }
+.password-reset-link { width: auto; margin: 8px 0 2px auto; display: block; color: #9eb3c3; font-size: .72rem; }
 .security-note { margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--line); color: #7f97a9; font-size: .72rem; }.security-note > span[aria-hidden="true"] { color: var(--cyan); margin-right: 8px; }
 .error-message { min-height: 1.2em; color: #ff8882 !important; font-size: .78rem !important; }
 .ghost-button, .text-button { border: 0; color: var(--cyan); background: transparent; }.ghost-button { margin-left: 14px; padding: 9px 12px; border: 1px solid var(--line); }

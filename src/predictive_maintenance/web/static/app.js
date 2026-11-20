@@ -53,6 +53,7 @@ const translations = {
       email: "Email",
       password: "Password",
       authenticate: "Authenticate",
+      forgotPassword: "Forgot your password?",
       noAccount: "Don't have an account yet?",
       securityNote: "Credentials are verified by Google Identity Platform.",
     },
@@ -85,6 +86,15 @@ const translations = {
       submit: "Request access",
       successTitle: "Request received",
       successBody: "Your request has been recorded. If it is approved, Bordás Márton will reply from bordas.marton@gmail.com. You will set your own password through a secure Firebase link; no password is sent by email.",
+    },
+    passwordReset: {
+      eyebrow: "ACCOUNT RECOVERY",
+      title: "Reset your password",
+      guidance: "Enter your account email address. If it belongs to an active account, Firebase will send a secure password-reset link.",
+      email: "Email address",
+      submit: "Send reset link",
+      successTitle: "Check your inbox",
+      successBody: "If an active account exists for this address, Firebase has sent a password-reset link. Also check your spam folder. For security, this message does not confirm whether the account exists.",
     },
     dashboard: {
       eyebrow: "SELECTABLE MODELS · LIVE INFERENCE",
@@ -158,6 +168,7 @@ const translations = {
       accessRequestInvalid: "Check the email address and message, then try again.",
       accessRequestLimited: "A request has already been sent recently. Please try again later.",
       accessRequestUnavailable: "The request could not be sent right now. Please try again later.",
+      passwordResetUnavailable: "The password-reset request could not be sent right now. Please try again later.",
       guestUnavailable: "Guest mode is temporarily unavailable. Please try again later.",
       guestLimited: "The guest-session limit has been reached. Please try again later or request a registered account.",
       guestSelection: "Select between 1 and 10 observations.",
@@ -244,6 +255,7 @@ const translations = {
       email: "E-mail",
       password: "Jelszó",
       authenticate: "Bejelentkezés",
+      forgotPassword: "Elfelejtette a jelszavát?",
       noAccount: "Nincs még felhasználója?",
       securityNote: "A hitelesítő adatokat a Google Identity Platform ellenőrzi.",
     },
@@ -276,6 +288,15 @@ const translations = {
       submit: "Felhasználó kérése",
       successTitle: "A kérelem megérkezett",
       successBody: "A kérelmet rögzítettük. Jóváhagyás esetén Bordás Márton válaszol a bordas.marton@gmail.com címről. A jelszavát Ön állítja majd be egy biztonságos Firebase-linken; jelszót nem küldünk e-mailben.",
+    },
+    passwordReset: {
+      eyebrow: "FIÓK HELYREÁLLÍTÁSA",
+      title: "Jelszó visszaállítása",
+      guidance: "Adja meg a fiókjához tartozó e-mail-címet. Ha a címhez aktív fiók tartozik, a Firebase biztonságos jelszó-visszaállító linket küld.",
+      email: "E-mail-cím",
+      submit: "Visszaállító link küldése",
+      successTitle: "Ellenőrizze a beérkező leveleit",
+      successBody: "Ha ehhez a címhez aktív fiók tartozik, a Firebase elküldte a jelszó-visszaállító linket. Ellenőrizze a levélszemét mappát is. Biztonsági okból ez az üzenet nem erősíti meg, hogy a fiók létezik-e.",
     },
     dashboard: {
       eyebrow: "VÁLASZTHATÓ MODELLEK · ÉLŐ INFERENCE",
@@ -349,6 +370,7 @@ const translations = {
       accessRequestInvalid: "Ellenőrizze az e-mail-címet és az üzenetet, majd próbálja újra.",
       accessRequestLimited: "Erről a címről nemrég már érkezett kérelem. Próbálja újra később.",
       accessRequestUnavailable: "A kérelmet most nem sikerült elküldeni. Próbálja újra később.",
+      passwordResetUnavailable: "A jelszó-visszaállítási kérelmet most nem sikerült elküldeni. Próbálja újra később.",
       guestUnavailable: "A vendégmód átmenetileg nem érhető el. Próbáld újra később.",
       guestLimited: "A vendégmunkamenetek korlátját elérted. Próbáld újra később, vagy kérj regisztrált fiókot.",
       guestSelection: "Válassz ki 1–10 megfigyelést.",
@@ -532,6 +554,35 @@ async function submitAccessRequest() {
   if (response.status === 422) throw localizedError("errors.accessRequestInvalid");
   if (response.status === 429) throw localizedError("errors.accessRequestLimited");
   throw localizedError("errors.accessRequestUnavailable");
+}
+
+function resetPasswordResetForm() {
+  $("password-reset-form").reset();
+  $("password-reset-email").value = $("email").value.trim();
+  $("password-reset-error").textContent = "";
+  $("password-reset-form-view").classList.remove("hidden");
+  $("password-reset-success").classList.add("hidden");
+  $("submit-password-reset").disabled = false;
+}
+
+async function requestPasswordReset(email) {
+  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${encodeURIComponent(config.firebaseApiKey)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Firebase-Locale": state.language,
+    },
+    body: JSON.stringify({ requestType: "PASSWORD_RESET", email }),
+  });
+  if (response.ok) return;
+  const payload = await response.json().catch(() => ({}));
+  const code = payload?.error?.message || "PASSWORD_RESET_FAILED";
+  // A neutral success response prevents the login page from exposing which
+  // email addresses have an account, even if enumeration protection is off.
+  if (["EMAIL_NOT_FOUND", "USER_DISABLED"].includes(code)) return;
+  if (code === "INVALID_EMAIL") throw localizedError("errors.invalidEmail");
+  throw localizedError("errors.passwordResetUnavailable");
 }
 
 function locale() {
@@ -994,6 +1045,28 @@ $("open-access-request").addEventListener("click", (event) => {
   resetAccessRequestForm();
   openModal("access-request-modal", event.currentTarget);
   $("request-email").focus();
+});
+
+$("open-password-reset").addEventListener("click", (event) => {
+  resetPasswordResetForm();
+  openModal("password-reset-modal", event.currentTarget);
+  $("password-reset-email").focus();
+});
+
+$("password-reset-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  $("password-reset-error").textContent = "";
+  $("submit-password-reset").disabled = true;
+  try {
+    await requestPasswordReset($("password-reset-email").value.trim());
+    $("password-reset-form-view").classList.add("hidden");
+    $("password-reset-success").classList.remove("hidden");
+    $("password-reset-success").querySelector("button").focus();
+  } catch (error) {
+    $("password-reset-error").textContent = errorMessage(error);
+  } finally {
+    $("submit-password-reset").disabled = false;
+  }
 });
 
 $("request-email").addEventListener("input", updateCharacterCounters);

@@ -88,6 +88,9 @@
             <span data-i18n="login.password">Password</span>
             <input id="password" type="password" autocomplete="current-password" required />
           </label>
+          <button id="open-password-reset" class="account-request-link password-reset-link" type="button" data-i18n="login.forgotPassword">
+            Forgot your password?
+          </button>
           <button id="login-button" class="primary-button" type="submit">
             <span data-i18n="login.authenticate">Authenticate</span>
             <span aria-hidden="true">→</span>
@@ -267,6 +270,40 @@
           <p data-i18n="access.successBody">Your request has been recorded. If it is approved, Bordás Márton will reply from bordas.marton@gmail.com. You will set your own password through a secure Firebase link; no password is sent by email.</p>
           <div class="modal-actions">
             <button class="primary-button compact-button" type="button" data-close-modal="access-request-modal" data-i18n="common.close">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="password-reset-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="password-reset-title">
+      <div class="modal-card modal-card-confirm">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow" data-i18n="passwordReset.eyebrow">ACCOUNT RECOVERY</p>
+            <h2 id="password-reset-title" data-i18n="passwordReset.title">Reset your password</h2>
+          </div>
+          <button class="modal-close" type="button" data-close-modal="password-reset-modal" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <div id="password-reset-form-view">
+          <p data-i18n="passwordReset.guidance">Enter your account email address. If it belongs to an active account, Firebase will send a secure password-reset link.</p>
+          <form id="password-reset-form">
+            <label class="request-field" for="password-reset-email">
+              <span data-i18n="passwordReset.email">Email address</span>
+              <input id="password-reset-email" type="email" maxlength="100" autocomplete="email" required />
+            </label>
+            <p id="password-reset-error" class="error-message" role="alert"></p>
+            <div class="modal-actions">
+              <button class="ghost-button" type="button" data-close-modal="password-reset-modal" data-i18n="common.close">Close</button>
+              <button id="submit-password-reset" class="primary-button compact-button" type="submit" data-i18n="passwordReset.submit">Send reset link</button>
+            </div>
+          </form>
+        </div>
+        <div id="password-reset-success" class="access-request-success hidden" role="status">
+          <span class="success-mark" aria-hidden="true">✓</span>
+          <h3 data-i18n="passwordReset.successTitle">Check your inbox</h3>
+          <p data-i18n="passwordReset.successBody">If an active account exists for this address, Firebase has sent a password-reset link. Also check your spam folder. For security, this message does not confirm whether the account exists.</p>
+          <div class="modal-actions">
+            <button class="primary-button compact-button" type="button" data-close-modal="password-reset-modal" data-i18n="common.close">Close</button>
           </div>
         </div>
       </div>

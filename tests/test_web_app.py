@@ -33,6 +33,8 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'id="input-details-modal"' in index.text
     assert 'id="logout-modal"' in index.text
     assert 'id="access-request-modal"' in index.text
+    assert 'id="password-reset-modal"' in index.text
+    assert 'id="open-password-reset"' in index.text
     assert 'id="guest-limits-modal"' in index.text
     assert 'id="open-guest-mode"' in index.text
     assert 'id="guest-sample-list"' in index.text
@@ -53,6 +55,11 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'openModal("logout-modal"' in script.text
     assert "Nincs még felhasználója?" in script.text
     assert "no password is sent by email" in script.text
+    assert "Forgot your password?" in script.text
+    assert "Elfelejtette a jelszavát?" in script.text
+    assert "accounts:sendOobCode" in script.text
+    assert '"X-Firebase-Locale": state.language' in script.text
+    assert "does not confirm whether the account exists" in script.text
     assert "Demo kipróbálása" in script.text
     assert "Egy futásban legfeljebb 10 megfigyelést" in script.text
     assert 'fetch("/guest-session"' in script.text
