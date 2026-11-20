@@ -6,6 +6,7 @@ locals {
     "firebase.googleapis.com",
     "firestore.googleapis.com",
     "identitytoolkit.googleapis.com",
+    "iamcredentials.googleapis.com",
     "run.googleapis.com",
     "secretmanager.googleapis.com",
     "servicecontrol.googleapis.com",
@@ -120,6 +121,12 @@ resource "google_service_account" "web" {
   project      = var.project_id
   account_id   = "predmaint-dashboard"
   display_name = "Predictive maintenance dashboard"
+}
+
+resource "google_service_account_iam_member" "web_token_creator" {
+  service_account_id = google_service_account.web.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:${google_service_account.web.email}"
 }
 
 resource "google_project_iam_member" "web_firestore" {

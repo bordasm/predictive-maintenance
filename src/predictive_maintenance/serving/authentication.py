@@ -17,6 +17,8 @@ class AuthenticatedUser:
 
     uid: str
     email: str | None = None
+    is_guest: bool = False
+    guest_session: str | None = None
 
 
 TokenVerifier = Callable[[str], dict[str, Any]]
@@ -137,7 +139,14 @@ def build_identity_guard(
                     headers={"WWW-Authenticate": "Bearer"},
                 )
             email = claims.get("email")
-            return AuthenticatedUser(uid=uid, email=str(email) if email else None)
+            is_guest = claims.get("guest") is True
+            guest_session = claims.get("guest_session")
+            return AuthenticatedUser(
+                uid=uid,
+                email=str(email) if email else None,
+                is_guest=is_guest,
+                guest_session=str(guest_session) if is_guest and guest_session else None,
+            )
 
         if legacy_api_key:
             import secrets

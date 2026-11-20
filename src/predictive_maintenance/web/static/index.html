@@ -92,6 +92,10 @@
             <span data-i18n="login.authenticate">Authenticate</span>
             <span aria-hidden="true">→</span>
           </button>
+          <button id="open-guest-mode" class="secondary-button guest-mode-button" type="button">
+            <span data-i18n="guest.tryDemo">Try demo</span>
+            <span aria-hidden="true">◇</span>
+          </button>
           <button id="open-access-request" class="account-request-link" type="button" data-i18n="login.noAccount">
             Don't have an account yet?
           </button>
@@ -104,6 +108,13 @@
       </section>
 
       <section id="dashboard-view" class="dashboard hidden">
+        <div id="guest-banner" class="guest-banner hidden" role="status">
+          <div>
+            <strong data-i18n="guest.bannerTitle">Guest demo session</strong>
+            <span id="guest-remaining"></span>
+          </div>
+          <button id="guest-limits-button" class="text-button" type="button" data-i18n="guest.viewLimits">View limits</button>
+        </div>
         <div class="dashboard-heading">
           <div>
             <p class="eyebrow" data-i18n="dashboard.eyebrow">SELECTABLE MODELS · LIVE INFERENCE</p>
@@ -137,6 +148,8 @@
               <button id="input-details-button" class="details-link" type="button" data-i18n="dashboard.details">Details</button>
             </div>
             <select id="sample-select"></select>
+            <div id="guest-sample-list" class="guest-sample-list hidden" role="group" data-i18n-aria-label="guest.sampleSelection"></div>
+            <p id="guest-selection-help" class="input-help hidden" data-i18n="guest.selectionHelp">Select up to 10 observations for one inference run.</p>
             <div id="sample-meta" class="sample-meta"></div>
             <button id="predict-button" class="primary-button" type="button">
               <span data-i18n="dashboard.runInference">Run inference</span> <span aria-hidden="true">→</span>
@@ -188,6 +201,32 @@
         </div>
       </section>
     </main>
+
+    <div id="guest-limits-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="guest-limits-title">
+      <div class="modal-card guest-limits-card">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow" data-i18n="guest.eyebrow">PUBLIC DEMO</p>
+            <h2 id="guest-limits-title" data-i18n="guest.title">Try RailSense as a guest</h2>
+          </div>
+          <button class="modal-close" type="button" data-close-modal="guest-limits-modal" data-i18n-aria-label="common.close" aria-label="Close">×</button>
+        </div>
+        <p data-i18n="guest.intro">A temporary guest session lets you explore the held-out test data and all three inference models without an account.</p>
+        <ul class="guest-limit-list">
+          <li data-i18n="guest.limitDuration">The session expires after 1 hour.</li>
+          <li data-i18n="guest.limitBatch">You can evaluate up to 10 observations in one run.</li>
+          <li data-i18n="guest.limitTotal">You can evaluate 30 observations during the session.</li>
+          <li data-i18n="guest.limitSessions">One source address can start up to 3 guest sessions per hour.</li>
+          <li data-i18n="guest.limitData">Only the held-out demonstration dataset is available.</li>
+        </ul>
+        <p class="modal-callout" data-i18n="guest.registeredBenefit">Administrator-approved registered accounts do not have these guest-mode limits.</p>
+        <p id="guest-error" class="error-message" role="alert"></p>
+        <div class="modal-actions split-actions">
+          <button class="ghost-button" type="button" data-close-modal="guest-limits-modal" data-i18n="common.close">Close</button>
+          <button id="start-guest-session" class="primary-button compact-button" type="button" data-i18n="guest.start">Start guest session</button>
+        </div>
+      </div>
+    </div>
 
     <div id="access-request-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="access-request-title">
       <div class="modal-card access-request-card">

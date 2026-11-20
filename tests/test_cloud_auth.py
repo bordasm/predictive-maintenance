@@ -134,3 +134,22 @@ def test_identity_guard_preserves_local_anonymous_mode() -> None:
     guard = build_identity_guard(None)
     user = guard()
     assert user == AuthenticatedUser(uid="local-anonymous", email=None)
+
+
+def test_firebase_guard_preserves_guest_claims() -> None:
+    guard = build_identity_guard(
+        "demo-project",
+        token_verifier=lambda _token: {
+            "uid": "predmaint-public-demo",
+            "guest": True,
+            "guest_session": "guest-session-123",
+        },
+    )
+
+    user = guard(bearer=type("Credentials", (), {"credentials": "token"})())
+
+    assert user == AuthenticatedUser(
+        uid="predmaint-public-demo",
+        is_guest=True,
+        guest_session="guest-session-123",
+    )

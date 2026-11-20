@@ -237,6 +237,13 @@ Google Secret Manager. The workflow never generates or emails a password; an
 approved user sets their own password through Firebase. Configuration and
 privacy notes are in the [Google Cloud deployment guide](deploy/gcp/README.md#access-requests-and-secure-password-setup).
 
+The signed-out dashboard also provides a bilingual public guest mode without a
+shared password. It uses a one-hour Firebase token, exposes only the held-out
+demo dataset, accepts up to 10 observations per inference request, and permits
+30 evaluated observations per guest session. Server-side Firestore counters
+enforce the limits; administrator-approved registered accounts are not subject
+to the guest quotas. See the [guest-mode security contract](deploy/gcp/README.md#public-guest-mode).
+
 ## Data
 
 Download the [Microsoft Azure Predictive Maintenance dataset](https://www.kaggle.com/datasets/arnabbiswas1/microsoft-azure-predictive-maintenance)

@@ -99,6 +99,8 @@ class FirestorePredictionLogger:
                     "latency_ms": latency_ms,
                     "user_uid": user.uid,
                     "user_email": user.email,
+                    "is_guest": user.is_guest,
+                    "guest_session": user.guest_session,
                     "created_at": firestore.SERVER_TIMESTAMP,
                 },
             )

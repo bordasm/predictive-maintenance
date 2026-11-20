@@ -19,6 +19,10 @@ from predictive_maintenance.web.access_requests import (
     AccessRequestRateLimited,
     AccessRequestService,
 )
+from predictive_maintenance.web.guest_sessions import (
+    GuestSessionRateLimited,
+    GuestSessionService,
+)
 
 
 STATIC_DIR = Path(__file__).with_name("static")
@@ -104,6 +108,39 @@ def create_web_app() -> FastAPI:
             "status": "accepted",
             "notification": "sent" if result.notification_sent else "pending",
         }
+
+    @application.post("/guest-session", include_in_schema=False)
+    async def guest_session(request: Request) -> Response:
+        forwarded_for = request.headers.get("x-forwarded-for", "")
+        client_ip = forwarded_for.split(",", 1)[0].strip()
+        if not client_ip and request.client:
+            client_ip = request.client.host
+        try:
+            service = getattr(application.state, "guest_session_service", None)
+            if service is None:
+                service = GuestSessionService()
+            session = await run_in_threadpool(service.issue, client_ip=client_ip)
+        except GuestSessionRateLimited:
+            raise HTTPException(
+                status_code=429, detail="guest session limit exceeded"
+            ) from None
+        except Exception:
+            LOGGER.exception("Guest session creation failed")
+            raise HTTPException(
+                status_code=503, detail="guest sessions are unavailable"
+            ) from None
+        return Response(
+            content=json.dumps(
+                {
+                    "customToken": session.custom_token,
+                    "expiresIn": session.expires_in,
+                    "maxBatchSize": session.max_batch_size,
+                    "maxObservations": session.max_observations,
+                }
+            ),
+            media_type="application/json",
+            headers={"Cache-Control": "no-store"},
+        )
 
     @application.get("/", include_in_schema=False)
     def index() -> FileResponse:

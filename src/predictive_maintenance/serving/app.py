@@ -31,6 +31,10 @@ from predictive_maintenance.serving.authentication import (
 from predictive_maintenance.serving.demo_data import DemoDataset, load_demo_dataset
 from predictive_maintenance.serving.prediction_logging import build_prediction_logger
 from predictive_maintenance.serving.security import valid_request_id
+from predictive_maintenance.serving.guest_quota import (
+    GuestQuotaExceeded,
+    GuestQuotaService,
+)
 from predictive_maintenance.serving.schemas import (
     HealthResponse,
     ModelInfoResponse,
@@ -57,6 +61,7 @@ def create_app(
     prediction_backend: str | None = None,
     demo_data_path: str | Path | None = None,
     model_registry_path: str | Path | None = None,
+    guest_quota_service: GuestQuotaService | None = None,
 ) -> FastAPI:
     configured_manifest = Path(
         manifest_path
@@ -125,7 +130,7 @@ def create_app(
     application = FastAPI(
         title="Predictive Maintenance Inference API",
         description="Predict any component failure within the next 24 hours.",
-        version="1.4.0",
+        version="1.5.0",
         lifespan=lifespan,
     )
     allowed_origins = [
@@ -284,6 +289,29 @@ def create_app(
         request: Request,
         identity: AuthenticatedUser = Depends(require_identity),
     ) -> PredictionResponse:
+        guest_remaining: int | None = None
+        if identity.is_guest:
+            if not identity.guest_session:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="The guest session is invalid",
+                )
+            try:
+                quota = guest_quota_service or getattr(
+                    request.app.state, "guest_quota_service", None
+                )
+                if quota is None:
+                    quota = GuestQuotaService(configured_firebase_project)
+                    request.app.state.guest_quota_service = quota
+                guest_remaining = quota.consume(
+                    session_id=identity.guest_session,
+                    observation_count=len(payload.observations),
+                )
+            except GuestQuotaExceeded:
+                raise HTTPException(
+                    status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                    detail="The guest inference limit has been reached",
+                ) from None
         registry: ModelRegistry = request.app.state.model_registry
         service = registry.get(payload.model)
         logger = request.app.state.prediction_logger
@@ -335,6 +363,7 @@ def create_app(
                 )
                 for record in records
             ],
+            guest_observations_remaining=guest_remaining,
         )
 
     return application

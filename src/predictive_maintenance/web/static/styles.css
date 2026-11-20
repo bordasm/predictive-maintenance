@@ -149,6 +149,20 @@ select { height: 48px; padding: 0 12px; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .modal-actions .ghost-button { margin: 0; }
 .compact-button { width: auto; min-width: 112px; margin: 0; justify-content: center; }
+.secondary-button { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border: 1px solid rgba(45, 226, 208, .45); color: var(--cyan-soft); background: rgba(45, 226, 208, .06); font-weight: 800; }
+.secondary-button:hover, .secondary-button:focus-visible { border-color: var(--cyan); background: rgba(45, 226, 208, .12); outline: 0; }
+.guest-mode-button { margin-top: 10px; }
+.guest-banner { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 0 18px; padding: 13px 16px; border: 1px solid rgba(45, 226, 208, .28); border-left: 3px solid var(--cyan); background: rgba(45, 226, 208, .06); }
+.guest-banner > div { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.guest-banner strong { color: var(--cyan-soft); }
+.guest-banner span { color: var(--muted); font-size: .78rem; }
+.guest-limit-list { display: grid; gap: 10px; margin: 22px 0; padding-left: 22px; color: #c1d2dc; font-size: .86rem; line-height: 1.55; }
+.guest-limit-list li::marker { color: var(--cyan); }
+.guest-sample-list { display: grid; max-height: 250px; margin-bottom: 8px; overflow-y: auto; border: 1px solid var(--line); background: rgba(4, 15, 25, .72); }
+.guest-sample-option { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 10px 12px; border-bottom: 1px solid var(--line); color: #c7d6df; font-size: .72rem; line-height: 1.4; cursor: pointer; }
+.guest-sample-option:last-child { border-bottom: 0; }
+.guest-sample-option:hover { background: rgba(45, 226, 208, .06); }
+.guest-sample-option input { margin-top: 2px; accent-color: var(--cyan); }
 .split-actions { justify-content: flex-end; }
 .danger-button { color: #210500; background: var(--danger); }
 .danger-button:hover { background: #ff8c87; }

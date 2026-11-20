@@ -93,6 +93,7 @@ class PredictionResponse(BaseModel):
     model_version: str
     threshold: float
     predictions: list[Prediction]
+    guest_observations_remaining: int | None = None
 
 
 class HealthResponse(BaseModel):

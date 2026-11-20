@@ -86,6 +86,28 @@ If SMTP delivery fails, the request remains in Firestore with
 are no longer needed, because their email addresses and messages are personal
 data.
 
+## Public guest mode
+
+The signed-out dashboard offers a bilingual **Try demo / Demo kipróbálása**
+flow. The dashboard backend creates a short-lived Firebase custom token with a
+guest claim; no public password is stored or shared. API Gateway and the API
+validate the resulting Firebase ID token in the same way as registered users.
+
+Guest sessions are deliberately limited:
+
+- one session expires after 1 hour and is not refreshed;
+- one inference request can contain 1–10 held-out observations;
+- one session can evaluate at most 30 observations in total;
+- one source address can create at most 3 sessions per hour;
+- a global safeguard permits at most 100 new guest sessions per day;
+- only the packaged, machine-disjoint demonstration test data is exposed.
+
+Registered accounts created by the administrator do not use these guest-mode
+limits. Guest session and inference counters are stored transactionally in
+Firestore. The dashboard service account can sign Firebase custom tokens only
+for this purpose; Terraform grants it `roles/iam.serviceAccountTokenCreator` on
+itself rather than at project scope.
+
 ### Google Cloud Shell
 
 When `gcloud` and Terraform are not installed locally, first create the portable

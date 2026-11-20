@@ -56,6 +56,25 @@ const translations = {
       noAccount: "Don't have an account yet?",
       securityNote: "Credentials are verified by Google Identity Platform.",
     },
+    guest: {
+      tryDemo: "Try demo",
+      eyebrow: "PUBLIC DEMO",
+      title: "Try RailSense as a guest",
+      intro: "A temporary guest session lets you explore the held-out test data and all three inference models without an account.",
+      limitDuration: "The session expires after 1 hour.",
+      limitBatch: "You can evaluate up to 10 observations in one run.",
+      limitTotal: "You can evaluate 30 observations during the session.",
+      limitSessions: "One source address can start up to 3 guest sessions per hour.",
+      limitData: "Only the held-out demonstration dataset is available.",
+      registeredBenefit: "Administrator-approved registered accounts do not have these guest-mode limits.",
+      start: "Start guest session",
+      bannerTitle: "Guest demo session",
+      remaining: "{count} of 30 observations remaining",
+      viewLimits: "View limits",
+      sampleSelection: "Guest observation selection",
+      selectionHelp: "Select up to 10 observations for one inference run.",
+      signedIn: "Temporary guest session",
+    },
     access: {
       eyebrow: "REQUEST DEMO ACCESS",
       title: "Ask for a user account",
@@ -139,6 +158,10 @@ const translations = {
       accessRequestInvalid: "Check the email address and message, then try again.",
       accessRequestLimited: "A request has already been sent recently. Please try again later.",
       accessRequestUnavailable: "The request could not be sent right now. Please try again later.",
+      guestUnavailable: "Guest mode is temporarily unavailable. Please try again later.",
+      guestLimited: "The guest-session limit has been reached. Please try again later or request a registered account.",
+      guestSelection: "Select between 1 and 10 observations.",
+      guestQuota: "This guest session has reached its inference limit.",
       apiRequest: "API request failed ({status}).",
       missingConfig: "This deployment is missing its Google Cloud runtime configuration.",
     },
@@ -224,6 +247,25 @@ const translations = {
       noAccount: "Nincs még felhasználója?",
       securityNote: "A hitelesítő adatokat a Google Identity Platform ellenőrzi.",
     },
+    guest: {
+      tryDemo: "Demo kipróbálása",
+      eyebrow: "NYILVÁNOS DEMÓ",
+      title: "Próbáld ki a RailSense-t vendégként",
+      intro: "Az ideiglenes vendégmunkamenettel fiók nélkül kipróbálhatod az elkülönített tesztadatokat és mindhárom inference modellt.",
+      limitDuration: "A munkamenet 1 óra után lejár.",
+      limitBatch: "Egy futásban legfeljebb 10 megfigyelést értékelhetsz.",
+      limitTotal: "A munkamenet alatt összesen 30 megfigyelést értékelhetsz.",
+      limitSessions: "Egy forráscím óránként legfeljebb 3 vendégmunkamenetet indíthat.",
+      limitData: "Csak az elkülönített demonstrációs adatkészlet érhető el.",
+      registeredBenefit: "Az adminisztrátor által jóváhagyott regisztrált fiókokra ezek a vendégmód-korlátok nem vonatkoznak.",
+      start: "Vendégmunkamenet indítása",
+      bannerTitle: "Vendég demómunkamenet",
+      remaining: "30 megfigyelésből még {count} értékelhető",
+      viewLimits: "Korlátok megtekintése",
+      sampleSelection: "Vendég megfigyelésválasztás",
+      selectionHelp: "Válassz ki 1–10 megfigyelést egy inference-futtatáshoz.",
+      signedIn: "Ideiglenes vendégmunkamenet",
+    },
     access: {
       eyebrow: "DEMÓ-HOZZÁFÉRÉS KÉRÉSE",
       title: "Felhasználó kérése",
@@ -307,6 +349,10 @@ const translations = {
       accessRequestInvalid: "Ellenőrizze az e-mail-címet és az üzenetet, majd próbálja újra.",
       accessRequestLimited: "Erről a címről nemrég már érkezett kérelem. Próbálja újra később.",
       accessRequestUnavailable: "A kérelmet most nem sikerült elküldeni. Próbálja újra később.",
+      guestUnavailable: "A vendégmód átmenetileg nem érhető el. Próbáld újra később.",
+      guestLimited: "A vendégmunkamenetek korlátját elérted. Próbáld újra később, vagy kérj regisztrált fiókot.",
+      guestSelection: "Válassz ki 1–10 megfigyelést.",
+      guestQuota: "Ez a vendégmunkamenet elérte az inference-korlátját.",
       apiRequest: "Az API-kérés sikertelen ({status}).",
       missingConfig: "Ebből a deploymentből hiányzik a Google Cloud futásidejű konfigurációja.",
     },
@@ -356,6 +402,8 @@ const state = {
   refreshToken: sessionStorage.getItem("predmaint.refreshToken"),
   expiresAt: Number(sessionStorage.getItem("predmaint.expiresAt") || 0),
   email: sessionStorage.getItem("predmaint.email"),
+  isGuest: sessionStorage.getItem("predmaint.isGuest") === "true",
+  guestRemaining: Number(sessionStorage.getItem("predmaint.guestRemaining") || 30),
   language: storedLanguage(),
   samples: [],
   history: [],
@@ -366,6 +414,7 @@ const state = {
   loginError: null,
   inferenceError: null,
   accessRequestError: null,
+  guestError: null,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -514,15 +563,19 @@ function modelLabel(name) {
   return MODEL_LABELS[name] ?? String(name || "—").replaceAll("_", " ");
 }
 
-function setSession(payload, email) {
+function setSession(payload, email, { isGuest = false, storeRefreshToken = true } = {}) {
   state.token = payload.idToken;
-  state.refreshToken = payload.refreshToken;
+  state.refreshToken = storeRefreshToken ? payload.refreshToken : null;
   state.expiresAt = Date.now() + Number(payload.expiresIn || 3600) * 1000;
   state.email = email;
+  state.isGuest = isGuest;
   sessionStorage.setItem("predmaint.idToken", state.token);
-  sessionStorage.setItem("predmaint.refreshToken", state.refreshToken);
+  if (state.refreshToken) sessionStorage.setItem("predmaint.refreshToken", state.refreshToken);
+  else sessionStorage.removeItem("predmaint.refreshToken");
   sessionStorage.setItem("predmaint.expiresAt", String(state.expiresAt));
   sessionStorage.setItem("predmaint.email", email);
+  sessionStorage.setItem("predmaint.isGuest", String(isGuest));
+  sessionStorage.setItem("predmaint.guestRemaining", String(state.guestRemaining));
 }
 
 function clearSession() {
@@ -530,10 +583,14 @@ function clearSession() {
   state.refreshToken = null;
   state.expiresAt = 0;
   state.email = null;
+  state.isGuest = false;
+  state.guestRemaining = 30;
   sessionStorage.removeItem("predmaint.idToken");
   sessionStorage.removeItem("predmaint.refreshToken");
   sessionStorage.removeItem("predmaint.expiresAt");
   sessionStorage.removeItem("predmaint.email");
+  sessionStorage.removeItem("predmaint.isGuest");
+  sessionStorage.removeItem("predmaint.guestRemaining");
 }
 
 function firebaseError(code) {
@@ -559,7 +616,27 @@ async function signIn(email, password) {
   if (!response.ok) {
     throw firebaseError(payload?.error?.message || "AUTHENTICATION_FAILED");
   }
-  setSession(payload, email);
+  setSession(payload, email, { isGuest: false });
+}
+
+async function startGuestSession() {
+  const sessionResponse = await fetch("/guest-session", { method: "POST" });
+  const sessionPayload = await sessionResponse.json().catch(() => ({}));
+  if (!sessionResponse.ok) {
+    throw localizedError(
+      sessionResponse.status === 429 ? "errors.guestLimited" : "errors.guestUnavailable",
+    );
+  }
+  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${encodeURIComponent(config.firebaseApiKey)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: sessionPayload.customToken, returnSecureToken: true }),
+  });
+  const payload = await response.json();
+  if (!response.ok) throw localizedError("errors.guestUnavailable");
+  state.guestRemaining = Number(sessionPayload.maxObservations || 30);
+  setSession(payload, "guest", { isGuest: true, storeRefreshToken: false });
 }
 
 async function ensureToken() {
@@ -587,6 +664,7 @@ async function ensureToken() {
       expiresIn: payload.expires_in,
     },
     state.email,
+    { isGuest: false },
   );
   return state.token;
 }
@@ -609,6 +687,9 @@ async function apiFetch(path, options = {}) {
   }
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 429 && state.isGuest) {
+      throw localizedError("errors.guestQuota");
+    }
     throw localizedError("errors.apiRequest", { status: response.status });
   }
   return payload;
@@ -620,6 +701,7 @@ function showLogin(error = null) {
   $("login-view").classList.remove("hidden");
   $("dashboard-view").classList.add("hidden");
   $("logout-button").classList.add("hidden");
+  $("guest-banner").classList.add("hidden");
   $("login-error").textContent = errorMessage(error);
 }
 
@@ -628,7 +710,15 @@ function showDashboard() {
   $("login-view").classList.add("hidden");
   $("dashboard-view").classList.remove("hidden");
   $("logout-button").classList.remove("hidden");
-  $("signed-in-as").textContent = t("dynamic.signedInAs", { email: state.email });
+  $("signed-in-as").textContent = state.isGuest
+    ? t("guest.signedIn")
+    : t("dynamic.signedInAs", { email: state.email });
+  $("guest-banner").classList.toggle("hidden", !state.isGuest);
+  updateGuestRemaining();
+}
+
+function updateGuestRemaining() {
+  $("guest-remaining").textContent = t("guest.remaining", { count: state.guestRemaining });
 }
 
 function renderModel(model) {
@@ -684,11 +774,31 @@ function renderSampleOptions(dataset, selectedIndex = null) {
     .map((sample, index) => `<option value="${index}">${sampleLabel(sample)}</option>`)
     .join("");
   select.value = String(Math.min(previousIndex, Math.max(dataset.samples.length - 1, 0)));
+  select.classList.toggle("hidden", state.isGuest);
+  $("guest-sample-list").classList.toggle("hidden", !state.isGuest);
+  $("guest-selection-help").classList.toggle("hidden", !state.isGuest);
+  if (state.isGuest) {
+    $("guest-sample-list").innerHTML = dataset.samples.map((sample, index) => `
+      <label class="guest-sample-option">
+        <input type="checkbox" value="${index}" ${index === 0 ? "checked" : ""} />
+        <span>${sampleLabel(sample)}</span>
+      </label>`).join("");
+  }
   renderSelectedSample();
 }
 
+function selectedSampleIndexes() {
+  if (!state.isGuest) return [Number($("sample-select").value || 0)];
+  return [...$("guest-sample-list").querySelectorAll('input[type="checkbox"]:checked')]
+    .map((input) => Number(input.value));
+}
+
+function selectedSamples() {
+  return selectedSampleIndexes().map((index) => state.samples[index]).filter(Boolean);
+}
+
 function selectedSample() {
-  return state.samples[Number($("sample-select").value || 0)];
+  return selectedSamples()[0];
 }
 
 function renderSelectedSample() {
@@ -794,8 +904,11 @@ function applyTranslations() {
   });
   $("service-status").textContent = t(state.model ? "status.online" : "status.secure");
   if (state.email && !$("dashboard-view").classList.contains("hidden")) {
-    $("signed-in-as").textContent = t("dynamic.signedInAs", { email: state.email });
+    $("signed-in-as").textContent = state.isGuest
+      ? t("guest.signedIn")
+      : t("dynamic.signedInAs", { email: state.email });
   }
+  updateGuestRemaining();
   if (state.model) renderModel(state.model);
   if (state.models.length) selectModel(state.model?.model || state.models[0].model);
   if (state.dataset) renderSampleOptions(state.dataset);
@@ -807,6 +920,7 @@ function applyTranslations() {
   $("login-error").textContent = errorMessage(state.loginError);
   $("inference-error").textContent = errorMessage(state.inferenceError);
   $("access-request-error").textContent = errorMessage(state.accessRequestError);
+  $("guest-error").textContent = errorMessage(state.guestError);
   updateCharacterCounters();
 }
 
@@ -846,6 +960,34 @@ document.querySelectorAll(".modal-backdrop").forEach((modal) => {
 
 $("input-details-button").addEventListener("click", (event) => {
   openModal("input-details-modal", event.currentTarget);
+});
+
+$("open-guest-mode").addEventListener("click", (event) => {
+  state.guestError = null;
+  $("guest-error").textContent = "";
+  openModal("guest-limits-modal", event.currentTarget);
+});
+
+$("guest-limits-button").addEventListener("click", (event) => {
+  state.guestError = null;
+  $("guest-error").textContent = "";
+  openModal("guest-limits-modal", event.currentTarget);
+});
+
+$("start-guest-session").addEventListener("click", async () => {
+  state.guestError = null;
+  $("guest-error").textContent = "";
+  $("start-guest-session").disabled = true;
+  try {
+    await startGuestSession();
+    closeModal("guest-limits-modal", false);
+    await loadWorkspace();
+  } catch (error) {
+    state.guestError = error;
+    $("guest-error").textContent = errorMessage(error);
+  } finally {
+    $("start-guest-session").disabled = false;
+  }
 });
 
 $("open-access-request").addEventListener("click", (event) => {
@@ -909,6 +1051,17 @@ $("confirm-logout-button").addEventListener("click", () => {
 });
 
 $("sample-select").addEventListener("change", renderSelectedSample);
+$("guest-sample-list").addEventListener("change", (event) => {
+  if (event.target.type !== "checkbox") return;
+  const selected = selectedSampleIndexes();
+  if (selected.length > 10) {
+    event.target.checked = false;
+    state.inferenceError = localizedError("errors.guestSelection");
+    $("inference-error").textContent = errorMessage(state.inferenceError);
+    return;
+  }
+  renderSelectedSample();
+});
 $("model-select").addEventListener("change", (event) => selectModel(event.target.value));
 
 $("toggle-features").addEventListener("click", () => {
@@ -918,34 +1071,44 @@ $("toggle-features").addEventListener("click", () => {
 });
 
 $("predict-button").addEventListener("click", async () => {
-  const sample = selectedSample();
-  if (!sample) return;
+  const samples = selectedSamples();
+  if (!samples.length || (state.isGuest && samples.length > 10)) {
+    state.inferenceError = localizedError("errors.guestSelection");
+    $("inference-error").textContent = errorMessage(state.inferenceError);
+    return;
+  }
   state.inferenceError = null;
   $("inference-error").textContent = "";
   $("predict-button").disabled = true;
   try {
-    const observationId = `${sample.sample_id}-${crypto.randomUUID()}`;
     const payload = await apiFetch("/v1/predict", {
       method: "POST",
       body: JSON.stringify({
         model: state.model.model,
-        observations: [{
-          observation_id: observationId,
+        observations: samples.map((sample) => ({
+          observation_id: `${sample.sample_id}-${crypto.randomUUID()}`,
           machine_id: sample.machine_id,
           observed_at: sample.observed_at,
           features: sample.features,
           ...(state.model.input_type === "sequence_window" ? { sequence: sample.sequence } : {}),
-        }],
+        })),
       }),
     });
-    const prediction = payload.predictions[0];
-    state.history.push({
-      sample,
-      prediction,
-      model: payload.model,
-      correct: prediction.alert === sample.actual_failure_within_horizon,
+    payload.predictions.forEach((prediction, index) => {
+      const sample = samples[index];
+      state.history.push({
+        sample,
+        prediction,
+        model: payload.model,
+        correct: prediction.alert === sample.actual_failure_within_horizon,
+      });
     });
-    renderResult(sample, prediction, payload.model);
+    if (state.isGuest && payload.guest_observations_remaining != null) {
+      state.guestRemaining = Number(payload.guest_observations_remaining);
+      sessionStorage.setItem("predmaint.guestRemaining", String(state.guestRemaining));
+      updateGuestRemaining();
+    }
+    renderResult(samples[0], payload.predictions[0], payload.model);
     renderHistory();
   } catch (error) {
     state.inferenceError = error;

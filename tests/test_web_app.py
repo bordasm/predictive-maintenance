@@ -7,6 +7,10 @@ from predictive_maintenance.web.access_requests import (
     AccessRequestResult,
 )
 from predictive_maintenance.web.app import create_web_app
+from predictive_maintenance.web.guest_sessions import (
+    GuestSession,
+    GuestSessionRateLimited,
+)
 
 
 def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
@@ -29,6 +33,9 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'id="input-details-modal"' in index.text
     assert 'id="logout-modal"' in index.text
     assert 'id="access-request-modal"' in index.text
+    assert 'id="guest-limits-modal"' in index.text
+    assert 'id="open-guest-mode"' in index.text
+    assert 'id="guest-sample-list"' in index.text
     assert 'maxlength="100"' in index.text
     assert 'maxlength="1000"' in index.text
     assert 'id="decision-explanation"' in index.text
@@ -46,6 +53,11 @@ def test_dashboard_serves_runtime_configuration(monkeypatch) -> None:
     assert 'openModal("logout-modal"' in script.text
     assert "Nincs még felhasználója?" in script.text
     assert "no password is sent by email" in script.text
+    assert "Demo kipróbálása" in script.text
+    assert "Egy futásban legfeljebb 10 megfigyelést" in script.text
+    assert 'fetch("/guest-session"' in script.text
+    assert "signInWithCustomToken" in script.text
+    assert "samples.map((sample)" in script.text
     assert config.status_code == 200
     assert "https://api.example.test" in config.text
     assert "public-firebase-key" in config.text
@@ -122,3 +134,46 @@ def test_access_request_honeypot_and_rate_limit() -> None:
     assert bot.status_code == 202
     assert service.calls == []
     assert limited.status_code == 429
+
+
+class RecordingGuestSessionService:
+    def __init__(self, *, limited: bool = False) -> None:
+        self.limited = limited
+        self.client_ips: list[str] = []
+
+    def issue(self, *, client_ip: str) -> GuestSession:
+        if self.limited:
+            raise GuestSessionRateLimited
+        self.client_ips.append(client_ip)
+        return GuestSession(custom_token="firebase-custom-token", session_id="session-1")
+
+
+def test_guest_session_is_issued_without_a_public_password() -> None:
+    app = create_web_app()
+    service = RecordingGuestSessionService()
+    app.state.guest_session_service = service
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/guest-session", headers={"X-Forwarded-For": "203.0.113.9"}
+        )
+
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+    assert response.json() == {
+        "customToken": "firebase-custom-token",
+        "expiresIn": 3600,
+        "maxBatchSize": 10,
+        "maxObservations": 30,
+    }
+    assert service.client_ips == ["203.0.113.9"]
+
+
+def test_guest_session_rate_limit_is_reported() -> None:
+    app = create_web_app()
+    app.state.guest_session_service = RecordingGuestSessionService(limited=True)
+
+    with TestClient(app) as client:
+        response = client.post("/guest-session")
+
+    assert response.status_code == 429

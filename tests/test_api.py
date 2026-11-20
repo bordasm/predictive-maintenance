@@ -13,7 +13,20 @@ from predictive_maintenance.data.split import assign_machine_splits
 from predictive_maintenance.models.baseline import feature_columns
 from predictive_maintenance.models.challenger import build_challenger_model
 from predictive_maintenance.serving.app import create_app
+from predictive_maintenance.serving.guest_quota import GuestQuotaExceeded
 from predictive_maintenance.serving.schemas import FeatureVector
+
+
+class RecordingGuestQuota:
+    def __init__(self, *, limited: bool = False) -> None:
+        self.limited = limited
+        self.calls: list[tuple[str, int]] = []
+
+    def consume(self, *, session_id: str, observation_count: int) -> int:
+        self.calls.append((session_id, observation_count))
+        if self.limited:
+            raise GuestQuotaExceeded
+        return 30 - observation_count
 
 
 def test_inference_api_loads_champion_and_validates_requests(
@@ -149,6 +162,53 @@ def test_inference_api_loads_champion_and_validates_requests(
     assert stored[0][0] == request_observation["observation_id"]
     assert stored[0][1] == "hist_gradient_boosting"
     assert json.loads(stored[0][2])["volt"] == payload["volt"]
+
+    quota = RecordingGuestQuota()
+    guest_observations = [
+        {**request_observation, "observation_id": f"guest-observation-{index}"}
+        for index in range(2)
+    ]
+    guest_claims = {
+        "uid": "predmaint-public-demo",
+        "guest": True,
+        "guest_session": "guest-session-123",
+    }
+    with TestClient(
+        create_app(
+            manifest_path,
+            tmp_path / "guest-predictions.db",
+            firebase_project_id="demo-project",
+            token_verifier=lambda _token: guest_claims,
+            guest_quota_service=quota,
+        )
+    ) as guest_client:
+        guest_prediction = guest_client.post(
+            "/v1/predict",
+            headers={"Authorization": "Bearer guest-token"},
+            json={"observations": guest_observations},
+        )
+
+    assert guest_prediction.status_code == 200
+    assert guest_prediction.json()["guest_observations_remaining"] == 28
+    assert quota.calls == [("guest-session-123", 2)]
+
+    limited_quota = RecordingGuestQuota(limited=True)
+    with TestClient(
+        create_app(
+            manifest_path,
+            tmp_path / "limited-guest-predictions.db",
+            firebase_project_id="demo-project",
+            token_verifier=lambda _token: guest_claims,
+            guest_quota_service=limited_quota,
+        )
+    ) as guest_client:
+        limited_prediction = guest_client.post(
+            "/v1/predict",
+            headers={"Authorization": "Bearer guest-token"},
+            json={"observations": [guest_observations[0]]},
+        )
+
+    assert limited_prediction.status_code == 429
 
     with TestClient(
         create_app(
